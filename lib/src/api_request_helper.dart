@@ -139,6 +139,11 @@ class ApiRequestHelper {
           code: 'request-timeout',
           message: 'Request has timed out',
         );
+      case 429:
+        throw const ServiceException(
+          code: 'too-many-requests',
+          message: 'Too many requests',
+        );
       case 500:
         throw const ServiceException(
           code: 'internal-server-error',
