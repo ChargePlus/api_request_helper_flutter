@@ -139,6 +139,11 @@ class ApiRequestHelper {
           code: 'request-timeout',
           message: 'Request has timed out',
         );
+      case 422:
+        throw const ServiceException(
+          code: 'unprocessable-entity',
+          message: 'Could not process due to possible semantic errors',
+        );
       case 429:
         throw const ServiceException(
           code: 'too-many-requests',
