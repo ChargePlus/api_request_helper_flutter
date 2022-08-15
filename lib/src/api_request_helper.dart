@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:exceptions_flutter/exceptions_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -93,12 +94,17 @@ class ApiRequestHelper {
   }
 
   dynamic _returnResponse(http.Response response) {
+    log('api_request_helper_flutter response: $response');
     num statusCode = response.statusCode;
     final mappedResponse = json.decode(response.body) as Map<String, dynamic>;
+
+    log('api_request_helper_flutter body: $mappedResponse');
 
     if (statusCode == 200 && mappedResponse['status'] != 200) {
       statusCode = num.parse(mappedResponse['status'].toString());
     }
+
+    log('api_request_helper_flutter status code: $statusCode');
 
     switch (statusCode) {
       case 200:
