@@ -97,14 +97,14 @@ class ApiRequestHelper {
     num statusCode = response.statusCode;
     final mappedResponse = json.decode(response.body) as Map<String, dynamic>;
 
-    log('ApiRequestHelper response status code: $statusCode');
-    log('ApiRequestHelper body: $mappedResponse');
+    log('ApiRequestHelper response status code -- $statusCode');
+    log('ApiRequestHelper body -- $mappedResponse');
 
     if (statusCode == 200 && mappedResponse['status'] != 200) {
       statusCode = num.parse(mappedResponse['status'].toString());
     }
 
-    log('ApiRequestHelper body status code: $statusCode');
+    log('ApiRequestHelper body status code -- $statusCode');
 
     switch (statusCode) {
       case 200:
