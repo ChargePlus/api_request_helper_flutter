@@ -93,25 +93,6 @@ class ApiRequestHelper {
     return _returnResponse(response);
   }
 
-  /// Calls a stream from server which will emit [Future] StreamResponse
-  Future<http.StreamedResponse> stream({
-    required Uri uri,
-    required String userToken,
-  }) async {
-    final _client = http.Client();
-
-    final request = http.Request('GET', uri);
-    request.headers['Accept'] = 'text/event-stream';
-    request.headers['Cache-Control'] = 'no-cache';
-    request.headers['Authorization'] = userToken;
-
-    final response = _client.send(request);
-
-    final stream = await response;
-
-    return stream;
-  }
-
   dynamic _returnResponse(http.Response response) {
     num statusCode = response.statusCode;
     final mappedResponse = json.decode(response.body) as Map<String, dynamic>;
