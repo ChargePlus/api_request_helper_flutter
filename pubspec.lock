@@ -43,6 +43,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.3"
+  eventsource:
+    dependency: "direct main"
+    description:
+      name: eventsource
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.4.0"
   exceptions_flutter:
     dependency: "direct main"
     description:
@@ -83,6 +90,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.0.1"
+  logging:
+    dependency: transitive
+    description:
+      name: logging
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.2"
   matcher:
     dependency: transitive
     description:
@@ -144,6 +158,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.1.1"
+  sync:
+    dependency: transitive
+    description:
+      name: sync
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.3.0"
   term_glyph:
     dependency: transitive
     description:
