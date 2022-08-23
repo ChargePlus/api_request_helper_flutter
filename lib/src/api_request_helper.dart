@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:eventsource/eventsource.dart';
 import 'package:exceptions_flutter/exceptions_flutter.dart';
 import 'package:http/http.dart' as http;
 
@@ -93,6 +94,30 @@ class ApiRequestHelper {
     return _returnResponse(response);
   }
 
+  Future<EventSource> eventsource({
+    required Uri uri,
+    required String userToken,
+  }) async {
+    try {
+      final eventsource = EventSource.connect(
+        uri,
+        headers: {
+          'Authorization': userToken,
+        },
+      );
+
+      return eventsource;
+    } on EventSourceSubscriptionException catch (error) {
+      final errorMessage = json.decode(error.message) as Map<String, dynamic>;
+      final exception = _getException(
+        statusCode: error.statusCode,
+        errorMessage: errorMessage['message'] as String,
+      );
+
+      throw exception;
+    }
+  }
+
   dynamic _returnResponse(http.Response response) {
     num statusCode = response.statusCode;
     final mappedResponse = json.decode(response.body) as Map<String, dynamic>;
@@ -110,75 +135,89 @@ class ApiRequestHelper {
       case 200:
       case 204:
         return mappedResponse['result'];
+      default:
+        final exception = _getException(
+          statusCode: statusCode,
+          errorMessage: mappedResponse['message'].toString(),
+        );
+        throw exception;
+    }
+  }
+
+  ServiceException _getException({
+    required num statusCode,
+    String? errorMessage,
+  }) {
+    switch (statusCode) {
       case 301:
-        throw const ServiceException(
+        return const ServiceException(
           code: 'invalid-credentials',
           message: 'Credentials are invalid',
         );
       case 400:
-        throw const ServiceException(
+        return const ServiceException(
           code: 'bad-request',
           message: 'The server could not process the request',
         );
       case 401:
-        throw const ServiceException(
+        return const ServiceException(
           code: 'unauthorized',
           message: 'Could not authorize user',
         );
       case 403:
-        throw const ServiceException(
+        return const ServiceException(
           code: 'insufficient-permission',
           message: 'User do not have permission',
         );
       case 404:
-        throw const ServiceException(
+        return const ServiceException(
           code: 'not-found',
           message: 'Could not retrieve resource',
         );
       case 405:
-        throw const ServiceException(
+        return const ServiceException(
           code: 'method-not-allowed',
           message: 'Could not perform action',
         );
       case 408:
-        throw const ServiceException(
+        return const ServiceException(
           code: 'request-timeout',
           message: 'Request has timed out',
         );
       case 422:
-        throw const ServiceException(
+        return const ServiceException(
           code: 'unprocessable-entity',
           message: 'Could not process due to possible semantic errors',
         );
       case 429:
-        throw const ServiceException(
+        return const ServiceException(
           code: 'too-many-requests',
           message: 'Too many requests',
         );
       case 500:
-        throw const ServiceException(
+        return const ServiceException(
           code: 'internal-server-error',
           message: 'Server has encountered issue',
         );
       case 502:
-        throw const ServiceException(
+        return const ServiceException(
           code: 'bad-gateway',
           message: 'Server received invalid response',
         );
       case 503:
-        throw const ServiceException(
+        return const ServiceException(
           code: 'server-unavailable',
           message: 'Server is not available',
         );
       case 504:
-        throw const ServiceException(
+        return const ServiceException(
           code: 'gateway-timeout',
           message: 'Server has timed out',
         );
       default:
         throw ServiceException(
-          code: response.statusCode.toString(),
-          message: mappedResponse['message'].toString(),
+          code: statusCode.toString(),
+          message: errorMessage,
         );
     }
   }
