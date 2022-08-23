@@ -94,7 +94,10 @@ class ApiRequestHelper {
     return _returnResponse(response);
   }
 
-  Future<EventSource> eventsource({
+  /// Connects to EventSource which emit [Future] EventSource
+  ///
+  /// Throws a [ServiceException] if response status code is not 200
+  Future<EventSource> eventSource({
     required Uri uri,
     required String userToken,
   }) async {
