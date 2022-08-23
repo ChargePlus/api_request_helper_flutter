@@ -7,6 +7,7 @@ environment:
   sdk: ">=2.17.0 <3.0.0"
 
 dependencies:
+  eventsource: ^0.4.0
   exceptions_flutter:
     git:
       url: https://github.com/ChargePlus/exceptions_flutter.git
