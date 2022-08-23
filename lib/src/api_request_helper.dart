@@ -102,7 +102,7 @@ class ApiRequestHelper {
     required String userToken,
   }) async {
     try {
-      final eventsource = EventSource.connect(
+      final eventsource = await EventSource.connect(
         uri,
         headers: {
           'Authorization': userToken,
