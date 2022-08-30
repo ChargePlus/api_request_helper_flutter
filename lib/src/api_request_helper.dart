@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
@@ -11,7 +12,14 @@ import 'package:http/http.dart' as http;
 /// {@endtemplate}
 class ApiRequestHelper {
   /// {@macro api_request_helper_flutter}
-  const ApiRequestHelper();
+  ApiRequestHelper();
+
+  final _controller = StreamController<num>();
+
+  /// Convenient getter for status code
+  Stream<num>? get statusCode async* {
+    yield* _controller.stream;
+  }
 
   /// Calls GET api which will emit [Future] Map<String, dynamic>
   ///
@@ -133,6 +141,8 @@ class ApiRequestHelper {
     }
 
     log('ApiRequestHelper -- body status code: $statusCode');
+
+    _controller.add(statusCode);
 
     switch (statusCode) {
       case 200:
