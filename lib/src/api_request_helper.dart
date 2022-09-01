@@ -142,7 +142,7 @@ class ApiRequestHelper {
 
     log('ApiRequestHelper -- body status code: $statusCode');
 
-    _controller.add(statusCode);
+    _controller.sink.add(statusCode);
 
     switch (statusCode) {
       case 200:
