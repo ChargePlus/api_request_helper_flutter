@@ -17,7 +17,7 @@ class ApiRequestHelper {
   final _controller = StreamController<num>();
 
   /// Convenient getter for status code
-  Stream<num>? get statusCode async* {
+  Stream<num> get statusCode async* {
     yield* _controller.stream;
   }
 
