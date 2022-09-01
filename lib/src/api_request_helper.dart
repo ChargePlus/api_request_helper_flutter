@@ -235,6 +235,6 @@ class ApiRequestHelper {
     }
   }
 
-  /// Disposes authentication status stream controller
+  /// Disposes status code stream controller
   void dispose() => _controller.close();
 }
