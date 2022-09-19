@@ -192,6 +192,11 @@ class ApiRequestHelper {
           code: 'method-not-allowed',
           message: 'Could not perform action',
         );
+      case 406:
+        return const ServiceException(
+          code: 'not-acceptable',
+          message: 'Could not perform action',
+        );
       case 408:
         return const ServiceException(
           code: 'request-timeout',
