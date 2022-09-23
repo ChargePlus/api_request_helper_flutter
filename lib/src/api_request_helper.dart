@@ -107,14 +107,16 @@ class ApiRequestHelper {
   /// Throws a [ServiceException] if response status code is not 200
   Future<EventSource> eventSource({
     required Uri uri,
-    required String userToken,
+    String? userToken,
   }) async {
     try {
       final eventsource = await EventSource.connect(
         uri,
-        headers: {
-          'Authorization': userToken,
-        },
+        headers: userToken != null
+            ? {
+                'Authorization': userToken,
+              }
+            : null,
       );
 
       return eventsource;
