@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:typed_data';
 
 import 'package:eventsource/eventsource.dart';
 import 'package:exceptions_flutter/exceptions_flutter.dart';
@@ -129,6 +130,24 @@ class ApiRequestHelper {
 
       throw exception;
     }
+  }
+
+  /// Calls GET api which will emit [Future] of Uint8List
+  ///
+  /// Throws a ClientException if an error occurs
+  Future<Uint8List> readBytes({
+    required Uri uri,
+    String? userToken,
+  }) async {
+    final byteFile = await http.readBytes(
+      uri,
+      headers: userToken != null
+          ? {
+              'Authorization': userToken,
+            }
+          : null,
+    );
+    return byteFile;
   }
 
   dynamic _returnResponse(http.Response response) {
