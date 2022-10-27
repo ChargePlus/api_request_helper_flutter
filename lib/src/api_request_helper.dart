@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:eventsource/eventsource.dart';
 import 'package:exceptions_flutter/exceptions_flutter.dart';
+import 'package:hashids2/hashids2.dart';
 import 'package:http/http.dart' as http;
 
 /// {@template api_request_helper_flutter}
@@ -22,20 +23,35 @@ class ApiRequestHelper {
     yield* _controller.stream;
   }
 
+  String get xApiToken {
+    final hashIds = HashIds();
+    final nowIsoString = DateTime.now().toUtc().toIso8601String();
+
+    return hashIds.encode(nowIsoString);
+  }
+
   /// Calls GET api which will emit [Future] Map<String, dynamic>
   ///
   /// Throws a [ServiceException] if response status code is not 200
   Future<dynamic> get({
     required Uri uri,
-    required String userToken,
+    String? userToken,
   }) async {
-    final response = await http.get(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': userToken,
-      },
-    ).timeout(const Duration(minutes: 1));
+    final headers = {
+      'Content-Type': 'application/json',
+      'x-api-token': xApiToken,
+    };
+
+    if (userToken != null) {
+      headers.addAll({'Authorization': userToken});
+    }
+
+    final response = await http
+        .get(
+          uri,
+          headers: headers,
+        )
+        .timeout(const Duration(minutes: 1));
     return _returnResponse(response);
   }
 
@@ -47,13 +63,19 @@ class ApiRequestHelper {
     required Map<String, dynamic> data,
     String? userToken,
   }) async {
+    final headers = {
+      'Content-Type': 'application/json',
+      'x-api-token': xApiToken,
+    };
+
+    if (userToken != null) {
+      headers.addAll({'Authorization': userToken});
+    }
+
     final response = await http
         .post(
           uri,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': userToken.toString(),
-          },
+          headers: headers,
           body: jsonEncode(data),
         )
         .timeout(const Duration(minutes: 1));
@@ -65,16 +87,22 @@ class ApiRequestHelper {
   /// Throws a [ServiceException] if response status code is not 200
   Future<dynamic> put({
     required Uri uri,
-    required String userToken,
+    String? userToken,
     required Map<String, dynamic> data,
   }) async {
+    final headers = {
+      'Content-Type': 'application/json',
+      'x-api-token': xApiToken,
+    };
+
+    if (userToken != null) {
+      headers.addAll({'Authorization': userToken});
+    }
+
     final response = await http
         .put(
           uri,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': userToken,
-          },
+          headers: headers,
           body: jsonEncode(data),
         )
         .timeout(const Duration(minutes: 1));
@@ -87,15 +115,21 @@ class ApiRequestHelper {
   Future<dynamic> delete({
     required Uri uri,
     Map<String, dynamic>? data,
-    required String userToken,
+    String? userToken,
   }) async {
+    final headers = {
+      'Content-Type': 'application/json',
+      'x-api-token': xApiToken,
+    };
+
+    if (userToken != null) {
+      headers.addAll({'Authorization': userToken});
+    }
+
     final response = await http
         .delete(
           uri,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': userToken,
-          },
+          headers: headers,
           body: jsonEncode(data),
         )
         .timeout(const Duration(minutes: 1));
