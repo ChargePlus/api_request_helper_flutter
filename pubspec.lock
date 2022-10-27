@@ -84,6 +84,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  hashids2:
+    dependency: "direct main"
+    description:
+      name: hashids2
+      sha256: "533ac5c94e0362d55c5ff49b1594dd66f28fb60b07d8a579e286bb53dc51d2cc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   http:
     dependency: "direct main"
     description:

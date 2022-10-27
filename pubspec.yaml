@@ -13,6 +13,7 @@ dependencies:
       url: https://github.com/ChargePlus/exceptions_flutter.git
   flutter:
     sdk: flutter
+  hashids2: ^2.0.0
   http: ^0.13.5
 
 dev_dependencies:

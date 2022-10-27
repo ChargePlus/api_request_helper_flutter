@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:eventsource/eventsource.dart';
 import 'package:exceptions_flutter/exceptions_flutter.dart';
+import 'package:hashids2/hashids2.dart';
 import 'package:http/http.dart' as http;
 
 /// {@template api_request_helper_flutter}
@@ -22,6 +23,13 @@ class ApiRequestHelper {
     yield* _controller.stream;
   }
 
+  String get xApiToken {
+    final hashIds = HashIds();
+    final nowIsoString = DateTime.now().toUtc().toIso8601String();
+
+    return hashIds.encode(nowIsoString);
+  }
+
   /// Calls GET api which will emit [Future] Map<String, dynamic>
   ///
   /// Throws a [ServiceException] if response status code is not 200
@@ -31,6 +39,7 @@ class ApiRequestHelper {
   }) async {
     final headers = {
       'Content-Type': 'application/json',
+      'x-api-token': xApiToken,
     };
 
     if (userToken != null) {
@@ -56,6 +65,7 @@ class ApiRequestHelper {
   }) async {
     final headers = {
       'Content-Type': 'application/json',
+      'x-api-token': xApiToken,
     };
 
     if (userToken != null) {
@@ -82,6 +92,7 @@ class ApiRequestHelper {
   }) async {
     final headers = {
       'Content-Type': 'application/json',
+      'x-api-token': xApiToken,
     };
 
     if (userToken != null) {
@@ -108,6 +119,7 @@ class ApiRequestHelper {
   }) async {
     final headers = {
       'Content-Type': 'application/json',
+      'x-api-token': xApiToken,
     };
 
     if (userToken != null) {
