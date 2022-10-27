@@ -27,15 +27,22 @@ class ApiRequestHelper {
   /// Throws a [ServiceException] if response status code is not 200
   Future<dynamic> get({
     required Uri uri,
-    required String userToken,
+    String? userToken,
   }) async {
-    final response = await http.get(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': userToken,
-      },
-    ).timeout(const Duration(minutes: 1));
+    final headers = {
+      'Content-Type': 'application/json',
+    };
+
+    if (userToken != null) {
+      headers.addAll({'Authorization': userToken});
+    }
+
+    final response = await http
+        .get(
+          uri,
+          headers: headers,
+        )
+        .timeout(const Duration(minutes: 1));
     return _returnResponse(response);
   }
 
@@ -47,13 +54,18 @@ class ApiRequestHelper {
     required Map<String, dynamic> data,
     String? userToken,
   }) async {
+    final headers = {
+      'Content-Type': 'application/json',
+    };
+
+    if (userToken != null) {
+      headers.addAll({'Authorization': userToken});
+    }
+
     final response = await http
         .post(
           uri,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': userToken.toString(),
-          },
+          headers: headers,
           body: jsonEncode(data),
         )
         .timeout(const Duration(minutes: 1));
@@ -65,16 +77,21 @@ class ApiRequestHelper {
   /// Throws a [ServiceException] if response status code is not 200
   Future<dynamic> put({
     required Uri uri,
-    required String userToken,
+    String? userToken,
     required Map<String, dynamic> data,
   }) async {
+    final headers = {
+      'Content-Type': 'application/json',
+    };
+
+    if (userToken != null) {
+      headers.addAll({'Authorization': userToken});
+    }
+
     final response = await http
         .put(
           uri,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': userToken,
-          },
+          headers: headers,
           body: jsonEncode(data),
         )
         .timeout(const Duration(minutes: 1));
@@ -87,15 +104,20 @@ class ApiRequestHelper {
   Future<dynamic> delete({
     required Uri uri,
     Map<String, dynamic>? data,
-    required String userToken,
+    String? userToken,
   }) async {
+    final headers = {
+      'Content-Type': 'application/json',
+    };
+
+    if (userToken != null) {
+      headers.addAll({'Authorization': userToken});
+    }
+
     final response = await http
         .delete(
           uri,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': userToken,
-          },
+          headers: headers,
           body: jsonEncode(data),
         )
         .timeout(const Duration(minutes: 1));
