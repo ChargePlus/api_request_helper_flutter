@@ -26,7 +26,6 @@ class ApiRequestHelper {
   /// Convenient getter for encrypted date time
   String get xApiToken {
     const encryptionKey = String.fromEnvironment('XAPITOKEN_ENCRYPTION_KEY');
-    print('encryptionKey: $encryptionKey');
 
     final hashIds = HashIds(
       // ignore: avoid_redundant_argument_values
@@ -34,7 +33,6 @@ class ApiRequestHelper {
       minHashLength: 16,
     );
     final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-    print('timestamp: $timestamp');
 
     return hashIds.encode(timestamp);
   }
