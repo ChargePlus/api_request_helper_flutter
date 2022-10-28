@@ -23,11 +23,14 @@ class ApiRequestHelper {
     yield* _controller.stream;
   }
 
+  /// Convenient getter for encrypted date time
   String get xApiToken {
-    final hashIds = HashIds();
-    final nowIsoString = DateTime.now().toUtc().toIso8601String();
+    const encryptionKey = String.fromEnvironment('XAPITOKEN_ENCRYPTION_KEY');
 
-    return hashIds.encode(nowIsoString);
+    final nowIsoString = DateTime.now().toUtc().toIso8601String();
+    final hashIds = HashIds(salt: nowIsoString, minHashLength: 10);
+
+    return hashIds.encode(encryptionKey);
   }
 
   /// Calls GET api which will emit [Future] Map<String, dynamic>
