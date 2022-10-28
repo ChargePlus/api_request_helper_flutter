@@ -26,11 +26,17 @@ class ApiRequestHelper {
   /// Convenient getter for encrypted date time
   String get xApiToken {
     const encryptionKey = String.fromEnvironment('XAPITOKEN_ENCRYPTION_KEY');
+    print('encryptionKey: $encryptionKey');
 
-    final nowIsoString = DateTime.now().toUtc().toIso8601String();
-    final hashIds = HashIds(salt: nowIsoString, minHashLength: 10);
+    final hashIds = HashIds(
+      // ignore: avoid_redundant_argument_values
+      salt: encryptionKey,
+      minHashLength: 16,
+    );
+    final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+    print('timestamp: $timestamp');
 
-    return hashIds.encode(encryptionKey);
+    return hashIds.encode(timestamp);
   }
 
   /// Calls GET api which will emit [Future] Map<String, dynamic>
