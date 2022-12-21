@@ -7,7 +7,9 @@ environment:
   sdk: ">=2.18.0 <3.0.0"
 
 dependencies:
-  eventsource: ^0.4.0
+  eventsource:
+    git:
+      url: https://github.com/ChargePlus/dart-eventsource
   exceptions_flutter:
     git:
       url: https://github.com/ChargePlus/exceptions_flutter.git
