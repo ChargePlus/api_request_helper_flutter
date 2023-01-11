@@ -208,6 +208,7 @@ class ApiRequestHelper {
 
     switch (statusCode) {
       case 200:
+      case 203:
       case 204:
         return mappedResponse['result'];
       default:
