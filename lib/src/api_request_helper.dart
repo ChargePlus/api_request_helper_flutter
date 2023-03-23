@@ -94,8 +94,8 @@ class ApiRequestHelper {
   /// Throws a [ServiceException] if response status code is not 200
   Future<dynamic> put({
     required Uri uri,
-    String? userToken,
     required Map<String, dynamic> data,
+    String? userToken,
   }) async {
     final headers = {
       'Content-Type': 'application/json',
@@ -150,6 +150,7 @@ class ApiRequestHelper {
   Future<EventSource> eventSource({
     required Uri uri,
     String? userToken,
+    bool isBrowser = false,
   }) async {
     try {
       final eventsource = await EventSource.connect(
@@ -159,6 +160,7 @@ class ApiRequestHelper {
                 'Authorization': userToken,
               }
             : null,
+        client: isBrowser ? http.Client() : null,
       );
 
       return eventsource;
