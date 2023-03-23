@@ -150,7 +150,6 @@ class ApiRequestHelper {
   Future<EventSource> eventSource({
     required Uri uri,
     String? userToken,
-    bool isBrowser = false,
   }) async {
     try {
       final eventsource = await EventSource.connect(
@@ -160,7 +159,6 @@ class ApiRequestHelper {
                 'Authorization': userToken,
               }
             : null,
-        client: isBrowser ? http.Client() : null,
       );
 
       return eventsource;
