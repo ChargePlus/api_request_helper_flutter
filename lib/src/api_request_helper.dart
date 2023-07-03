@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:typed_data';
 
-import 'package:eventsource/eventsource.dart';
 import 'package:exceptions_flutter/exceptions_flutter.dart';
 import 'package:hashids2/hashids2.dart';
 import 'package:http/http.dart' as http;
@@ -142,35 +141,6 @@ class ApiRequestHelper {
         .timeout(const Duration(minutes: 1));
 
     return _returnResponse(response);
-  }
-
-  /// Connects to EventSource which emit [Future] EventSource
-  ///
-  /// Throws a [ServiceException] if response status code is not 200
-  Future<EventSource> eventSource({
-    required Uri uri,
-    String? userToken,
-  }) async {
-    try {
-      final eventsource = await EventSource.connect(
-        uri,
-        headers: userToken != null
-            ? {
-                'Authorization': userToken,
-              }
-            : null,
-      );
-
-      return eventsource;
-    } on EventSourceSubscriptionException catch (error) {
-      final errorMessage = json.decode(error.message) as Map<String, dynamic>;
-      final exception = _getException(
-        statusCode: error.statusCode,
-        errorMessage: errorMessage['message'] as String,
-      );
-
-      throw exception;
-    }
   }
 
   /// Calls GET api which will emit [Future] of Uint8List
