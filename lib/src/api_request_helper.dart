@@ -16,7 +16,9 @@ class ApiRequestHelper {
   ApiRequestHelper();
 
   final _controller = StreamController<num>();
-  final xApiKey = String.fromEnvironment('XAPI_KEY');
+
+  /// X-API key
+  final xApiKey = const String.fromEnvironment('XAPI_KEY');
 
   /// Convenient getter for status code
   Stream<num> get statusCode async* {
