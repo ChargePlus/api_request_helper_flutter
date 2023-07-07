@@ -16,6 +16,7 @@ class ApiRequestHelper {
   ApiRequestHelper();
 
   final _controller = StreamController<num>();
+  final xApiKey = String.fromEnvironment('XAPI_KEY');
 
   /// Convenient getter for status code
   Stream<num> get statusCode async* {
@@ -46,6 +47,7 @@ class ApiRequestHelper {
     final headers = {
       'Content-Type': 'application/json',
       'x-api-token': xApiToken,
+      'x-api-key': xApiKey,
     };
 
     if (userToken != null) {
@@ -72,6 +74,7 @@ class ApiRequestHelper {
     final headers = {
       'Content-Type': 'application/json',
       'x-api-token': xApiToken,
+      'x-api-key': xApiKey,
     };
 
     if (userToken != null) {
@@ -99,6 +102,7 @@ class ApiRequestHelper {
     final headers = {
       'Content-Type': 'application/json',
       'x-api-token': xApiToken,
+      'x-api-key': xApiKey,
     };
 
     if (userToken != null) {
@@ -126,6 +130,7 @@ class ApiRequestHelper {
     final headers = {
       'Content-Type': 'application/json',
       'x-api-token': xApiToken,
+      'x-api-key': xApiKey,
     };
 
     if (userToken != null) {
