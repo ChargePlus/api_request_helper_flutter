@@ -17,6 +17,9 @@ class ApiRequestHelper {
 
   final _controller = StreamController<num>();
 
+  /// X-API key
+  final xApiKey = const String.fromEnvironment('XAPI_KEY');
+
   /// Convenient getter for status code
   Stream<num> get statusCode async* {
     yield* _controller.stream;
@@ -46,6 +49,7 @@ class ApiRequestHelper {
     final headers = {
       'Content-Type': 'application/json',
       'x-api-token': xApiToken,
+      'x-api-key': xApiKey,
     };
 
     if (userToken != null) {
@@ -72,6 +76,7 @@ class ApiRequestHelper {
     final headers = {
       'Content-Type': 'application/json',
       'x-api-token': xApiToken,
+      'x-api-key': xApiKey,
     };
 
     if (userToken != null) {
@@ -99,6 +104,7 @@ class ApiRequestHelper {
     final headers = {
       'Content-Type': 'application/json',
       'x-api-token': xApiToken,
+      'x-api-key': xApiKey,
     };
 
     if (userToken != null) {
@@ -126,6 +132,7 @@ class ApiRequestHelper {
     final headers = {
       'Content-Type': 'application/json',
       'x-api-token': xApiToken,
+      'x-api-key': xApiKey,
     };
 
     if (userToken != null) {
