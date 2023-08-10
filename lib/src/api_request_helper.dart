@@ -187,6 +187,7 @@ class ApiRequestHelper {
       case 200:
       case 203:
       case 204:
+      case 214:
         return mappedResponse['result'];
       default:
         final exception = _getException(
