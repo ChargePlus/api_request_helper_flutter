@@ -93,6 +93,34 @@ class ApiRequestHelper {
     return _returnResponse(response);
   }
 
+  /// Calls PATCH api which will emit [Future] dynamic
+  ///
+  /// Throws a [ServiceException] if response status code is not 200
+  Future<dynamic> patch({
+    required Uri uri,
+    required Map<String, dynamic> data,
+    String? userToken,
+  }) async {
+    final headers = {
+      'Content-Type': 'application/json',
+      'x-api-token': xApiToken,
+      'x-api-key': xApiKey,
+    };
+
+    if (userToken != null) {
+      headers.addAll({'Authorization': userToken});
+    }
+
+    final response = await http
+        .patch(
+          uri,
+          headers: headers,
+          body: jsonEncode(data),
+        )
+        .timeout(const Duration(minutes: 1));
+    return _returnResponse(response);
+  }
+
   /// Calls PUT api which will emit [Future] dynamic
   ///
   /// Throws a [ServiceException] if response status code is not 200
