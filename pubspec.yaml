@@ -14,9 +14,9 @@ dependencies:
   flutter:
     sdk: flutter
   hashids2: ^2.0.0
-  http: ^1.1.0
+  http: ^1.1.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  very_good_analysis: ^5.0.0+1
+  very_good_analysis: ^5.1.0
