@@ -45,6 +45,7 @@ class ApiRequestHelper {
   Future<dynamic> get({
     required Uri uri,
     String? userToken,
+    bool isResult = true,
   }) async {
     final headers = {
       'Content-Type': 'application/json',
@@ -62,7 +63,7 @@ class ApiRequestHelper {
           headers: headers,
         )
         .timeout(const Duration(minutes: 1));
-    return _returnResponse(response);
+    return _returnResponse(response: response, isResult: isResult);
   }
 
   /// Calls POST api which will emit [Future] dynamic
@@ -72,6 +73,7 @@ class ApiRequestHelper {
     required Uri uri,
     required Map<String, dynamic> data,
     String? userToken,
+    bool isResult = true,
   }) async {
     final headers = {
       'Content-Type': 'application/json',
@@ -90,7 +92,7 @@ class ApiRequestHelper {
           body: jsonEncode(data),
         )
         .timeout(const Duration(minutes: 1));
-    return _returnResponse(response);
+    return _returnResponse(response: response, isResult: isResult);
   }
 
   /// Calls PATCH api which will emit [Future] dynamic
@@ -100,6 +102,7 @@ class ApiRequestHelper {
     required Uri uri,
     required Map<String, dynamic> data,
     String? userToken,
+    bool isResult = true,
   }) async {
     final headers = {
       'Content-Type': 'application/json',
@@ -118,7 +121,7 @@ class ApiRequestHelper {
           body: jsonEncode(data),
         )
         .timeout(const Duration(minutes: 1));
-    return _returnResponse(response);
+    return _returnResponse(response: response, isResult: isResult);
   }
 
   /// Calls PUT api which will emit [Future] dynamic
@@ -128,6 +131,7 @@ class ApiRequestHelper {
     required Uri uri,
     required Map<String, dynamic> data,
     String? userToken,
+    bool isResult = true,
   }) async {
     final headers = {
       'Content-Type': 'application/json',
@@ -146,7 +150,7 @@ class ApiRequestHelper {
           body: jsonEncode(data),
         )
         .timeout(const Duration(minutes: 1));
-    return _returnResponse(response);
+    return _returnResponse(response: response, isResult: isResult);
   }
 
   /// Calls DELETE api which will emit [Future] dynamic
@@ -156,6 +160,7 @@ class ApiRequestHelper {
     required Uri uri,
     Map<String, dynamic>? data,
     String? userToken,
+    bool isResult = true,
   }) async {
     final headers = {
       'Content-Type': 'application/json',
@@ -175,7 +180,7 @@ class ApiRequestHelper {
         )
         .timeout(const Duration(minutes: 1));
 
-    return _returnResponse(response);
+    return _returnResponse(response: response, isResult: isResult);
   }
 
   /// Calls GET api which will emit [Future] of Uint8List
@@ -196,7 +201,10 @@ class ApiRequestHelper {
     return byteFile;
   }
 
-  dynamic _returnResponse(http.Response response) {
+  dynamic _returnResponse({
+    required http.Response response,
+    bool isResult = true,
+  }) {
     num statusCode = response.statusCode;
     final mappedResponse = json.decode(response.body) as Map<String, dynamic>;
 
@@ -216,7 +224,11 @@ class ApiRequestHelper {
       case 203:
       case 204:
       case 214:
-        return mappedResponse['result'];
+        if (isResult) {
+          return mappedResponse['result'];
+        } else {
+          return mappedResponse;
+        }
       default:
         final exception = _getException(
           statusCode: statusCode,
