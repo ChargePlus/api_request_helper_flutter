@@ -63,7 +63,7 @@ class ApiRequestHelper {
           headers: headers,
         )
         .timeout(const Duration(minutes: 1));
-    return _returnResponse(response: response, isResult: isResult);
+    return _returnResponse(response: response, isResult: isResult, uri: uri);
   }
 
   /// Calls POST api which will emit [Future] dynamic
@@ -92,7 +92,7 @@ class ApiRequestHelper {
           body: jsonEncode(data),
         )
         .timeout(const Duration(minutes: 1));
-    return _returnResponse(response: response, isResult: isResult);
+    return _returnResponse(response: response, isResult: isResult, uri: uri);
   }
 
   /// Calls PATCH api which will emit [Future] dynamic
@@ -121,7 +121,7 @@ class ApiRequestHelper {
           body: jsonEncode(data),
         )
         .timeout(const Duration(minutes: 1));
-    return _returnResponse(response: response, isResult: isResult);
+    return _returnResponse(response: response, isResult: isResult, uri: uri);
   }
 
   /// Calls PUT api which will emit [Future] dynamic
@@ -150,7 +150,7 @@ class ApiRequestHelper {
           body: jsonEncode(data),
         )
         .timeout(const Duration(minutes: 1));
-    return _returnResponse(response: response, isResult: isResult);
+    return _returnResponse(response: response, isResult: isResult, uri: uri);
   }
 
   /// Calls DELETE api which will emit [Future] dynamic
@@ -180,7 +180,7 @@ class ApiRequestHelper {
         )
         .timeout(const Duration(minutes: 1));
 
-    return _returnResponse(response: response, isResult: isResult);
+    return _returnResponse(response: response, isResult: isResult, uri: uri);
   }
 
   /// Calls GET api which will emit [Future] of Uint8List
@@ -203,19 +203,20 @@ class ApiRequestHelper {
 
   dynamic _returnResponse({
     required http.Response response,
+    required Uri uri,
     bool isResult = true,
   }) {
     num statusCode = response.statusCode;
     final mappedResponse = json.decode(response.body) as Map<String, dynamic>;
 
-    log('ApiRequestHelper -- response status code: $statusCode');
-    log('ApiRequestHelper -- body: $mappedResponse');
+    log('ApiRequestHelper -- Uri: $uri');
+    log('ApiRequestHelper -- StatusCode: statusCode: $statusCode');
+    log('ApiRequestHelper -- body: $mappedResponse, statusCode: '
+        '${mappedResponse['status']}');
 
     if (statusCode == 200 && mappedResponse['status'] != 200) {
       statusCode = num.parse(mappedResponse['status'].toString());
     }
-
-    log('ApiRequestHelper -- body status code: $statusCode');
 
     _controller.add(statusCode);
 
