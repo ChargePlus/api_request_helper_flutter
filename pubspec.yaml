@@ -14,7 +14,7 @@ dependencies:
   flutter:
     sdk: flutter
   hashids2: ^2.0.0
-  http: ^1.2.1
+  http: ^1.2.0
 
 dev_dependencies:
   flutter_test:
