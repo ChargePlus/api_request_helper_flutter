@@ -294,6 +294,11 @@ class ApiRequestHelper {
           code: 'too-many-requests',
           message: 'Too many requests',
         );
+      case 430:
+        return const ServiceException(
+          code: 'security-rejections',
+          message: 'Security Rejections',
+        );
       case 500:
         return const ServiceException(
           code: 'internal-server-error',
