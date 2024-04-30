@@ -209,16 +209,21 @@ class ApiRequestHelper {
     num statusCode = response.statusCode;
     final mappedResponse = json.decode(response.body) as Map<String, dynamic>;
 
-    log('ApiRequestHelper -- Uri: $uri');
-    log('ApiRequestHelper -- StatusCode: statusCode: $statusCode');
-    log('ApiRequestHelper -- body: $mappedResponse, statusCode: '
-        '${mappedResponse['status']}');
-
     if (statusCode == 200 && mappedResponse['status'] != 200) {
       statusCode = num.parse(mappedResponse['status'].toString());
     }
 
     _controller.add(statusCode);
+
+    final emoji = switch (statusCode) {
+      != null && >= 200 && < 300 => '✅ ',
+      != null && 300 && < 400 => '🟠 ',
+      _ => '❌ '
+    };
+
+    log('$emoji $statusCode $emoji -- $uri');
+    log('$emoji body $emoji -- json: $mappedResponse, statusCode: '
+        '${mappedResponse['status']}');
 
     switch (statusCode) {
       case 200:
