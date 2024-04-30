@@ -216,9 +216,9 @@ class ApiRequestHelper {
     _controller.add(statusCode);
 
     final emoji = switch (statusCode) {
-      != null && >= 200 && < 300 => '✅ ',
-      != null && 300 && < 400 => '🟠 ',
-      _ => '❌ '
+      != null && >= 200 && < 300 => '✅',
+      != null && >= 300 && < 400 => '🟠',
+      _ => '❌'
     };
 
     log('$emoji $statusCode $emoji -- $uri');
