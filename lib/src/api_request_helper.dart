@@ -46,9 +46,10 @@ class ApiRequestHelper {
     required Uri uri,
     String? userToken,
     bool isResult = true,
+    String contentType = 'application/json',
   }) async {
     final headers = {
-      'Content-Type': 'application/json',
+      'Content-Type': contentType,
       'x-api-token': xApiToken,
       'x-api-key': xApiKey,
     };
@@ -74,9 +75,10 @@ class ApiRequestHelper {
     required Map<String, dynamic> data,
     String? userToken,
     bool isResult = true,
+    String contentType = 'application/json',
   }) async {
     final headers = {
-      'Content-Type': 'application/json',
+      'Content-Type': contentType,
       'x-api-token': xApiToken,
       'x-api-key': xApiKey,
     };
@@ -103,9 +105,10 @@ class ApiRequestHelper {
     required Map<String, dynamic> data,
     String? userToken,
     bool isResult = true,
+    String contentType = 'application/json',
   }) async {
     final headers = {
-      'Content-Type': 'application/json',
+      'Content-Type': contentType,
       'x-api-token': xApiToken,
       'x-api-key': xApiKey,
     };
@@ -132,9 +135,10 @@ class ApiRequestHelper {
     required Map<String, dynamic> data,
     String? userToken,
     bool isResult = true,
+    String contentType = 'application/json',
   }) async {
     final headers = {
-      'Content-Type': 'application/json',
+      'Content-Type': contentType,
       'x-api-token': xApiToken,
       'x-api-key': xApiKey,
     };
@@ -161,9 +165,10 @@ class ApiRequestHelper {
     Map<String, dynamic>? data,
     String? userToken,
     bool isResult = true,
+    String contentType = 'application/json',
   }) async {
     final headers = {
-      'Content-Type': 'application/json',
+      'Content-Type': contentType,
       'x-api-token': xApiToken,
       'x-api-key': xApiKey,
     };
