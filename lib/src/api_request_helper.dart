@@ -294,15 +294,15 @@ class ApiRequestHelper {
           code: 'unprocessable-entity',
           message: 'Could not process due to possible semantic errors',
         );
+      case 428:
+        return const ServiceException(
+          code: 'security-rejections',
+          message: 'Security Rejections',
+        );
       case 429:
         return const ServiceException(
           code: 'too-many-requests',
           message: 'Too many requests',
-        );
-      case 430:
-        return const ServiceException(
-          code: 'security-rejections',
-          message: 'Security Rejections',
         );
       case 500:
         return const ServiceException(
