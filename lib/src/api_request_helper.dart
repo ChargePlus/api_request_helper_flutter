@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:exceptions_flutter/exceptions_flutter.dart';
@@ -13,7 +14,9 @@ import 'package:http/http.dart' as http;
 /// {@endtemplate}
 class ApiRequestHelper {
   /// {@macro api_request_helper_flutter}
-  ApiRequestHelper();
+  ApiRequestHelper({http.Client? client}) : _client = client ?? http.Client();
+
+  final http.Client _client;
 
   final _controller = StreamController<num>();
 
@@ -58,13 +61,10 @@ class ApiRequestHelper {
       headers.addAll({'Authorization': userToken});
     }
 
-    final response = await http
-        .get(
-          uri,
-          headers: headers,
-        )
-        .timeout(const Duration(minutes: 1));
-    return _returnResponse(response: response, isResult: isResult, uri: uri);
+    final request = http.Request('GET', uri);
+    request.headers.addAll(headers);
+
+    return _sendRequest(request: request, uri: uri, isResult: isResult);
   }
 
   /// Calls POST api which will emit [Future] dynamic
@@ -76,6 +76,7 @@ class ApiRequestHelper {
     String? userToken,
     bool isResult = true,
     String contentType = 'application/json',
+    Map<String, String> fileData = const {},
   }) async {
     final headers = {
       'Content-Type': contentType,
@@ -87,14 +88,27 @@ class ApiRequestHelper {
       headers.addAll({'Authorization': userToken});
     }
 
-    final response = await http
-        .post(
-          uri,
-          headers: headers,
-          body: jsonEncode(data),
-        )
-        .timeout(const Duration(minutes: 1));
-    return _returnResponse(response: response, isResult: isResult, uri: uri);
+    if (fileData.isEmpty) {
+      final request = http.Request('POST', uri);
+      request.headers.addAll(headers);
+      request.body = jsonEncode(data);
+
+      return _sendRequest(request: request, uri: uri, isResult: isResult);
+    }
+
+    final requestBody = data.map((key, value) => MapEntry(key, '$value'));
+    final request = http.MultipartRequest('POST', uri);
+    request.headers.addAll(headers);
+    request.fields.addAll(requestBody);
+
+    for (final filePathEntry in fileData.entries) {
+      final field = filePathEntry.key;
+      final fieldPath = filePathEntry.value;
+
+      request.files.add(await http.MultipartFile.fromPath(field, fieldPath));
+    }
+
+    return _sendRequest(request: request, uri: uri, isResult: isResult);
   }
 
   /// Calls PATCH api which will emit [Future] dynamic
@@ -106,6 +120,7 @@ class ApiRequestHelper {
     String? userToken,
     bool isResult = true,
     String contentType = 'application/json',
+    Map<String, String> fileData = const {},
   }) async {
     final headers = {
       'Content-Type': contentType,
@@ -117,14 +132,27 @@ class ApiRequestHelper {
       headers.addAll({'Authorization': userToken});
     }
 
-    final response = await http
-        .patch(
-          uri,
-          headers: headers,
-          body: jsonEncode(data),
-        )
-        .timeout(const Duration(minutes: 1));
-    return _returnResponse(response: response, isResult: isResult, uri: uri);
+    if (fileData.isEmpty) {
+      final request = http.Request('PATCH', uri);
+      request.headers.addAll(headers);
+      request.body = jsonEncode(data);
+
+      return _sendRequest(request: request, uri: uri, isResult: isResult);
+    }
+
+    final requestBody = data.map((key, value) => MapEntry(key, '$value'));
+    final request = http.MultipartRequest('PATCH', uri);
+    request.headers.addAll(headers);
+    request.fields.addAll(requestBody);
+
+    for (final filePathEntry in fileData.entries) {
+      final field = filePathEntry.key;
+      final fieldPath = filePathEntry.value;
+
+      request.files.add(await http.MultipartFile.fromPath(field, fieldPath));
+    }
+
+    return _sendRequest(request: request, uri: uri, isResult: isResult);
   }
 
   /// Calls PUT api which will emit [Future] dynamic
@@ -136,6 +164,7 @@ class ApiRequestHelper {
     String? userToken,
     bool isResult = true,
     String contentType = 'application/json',
+    Map<String, String> fileData = const {},
   }) async {
     final headers = {
       'Content-Type': contentType,
@@ -147,14 +176,27 @@ class ApiRequestHelper {
       headers.addAll({'Authorization': userToken});
     }
 
-    final response = await http
-        .put(
-          uri,
-          headers: headers,
-          body: jsonEncode(data),
-        )
-        .timeout(const Duration(minutes: 1));
-    return _returnResponse(response: response, isResult: isResult, uri: uri);
+    if (fileData.isEmpty) {
+      final request = http.Request('PUT', uri);
+      request.headers.addAll(headers);
+      request.body = jsonEncode(data);
+
+      return _sendRequest(request: request, uri: uri, isResult: isResult);
+    }
+
+    final requestBody = data.map((key, value) => MapEntry(key, '$value'));
+    final request = http.MultipartRequest('PUT', uri);
+    request.headers.addAll(headers);
+    request.fields.addAll(requestBody);
+
+    for (final filePathEntry in fileData.entries) {
+      final field = filePathEntry.key;
+      final fieldPath = filePathEntry.value;
+
+      request.files.add(await http.MultipartFile.fromPath(field, fieldPath));
+    }
+
+    return _sendRequest(request: request, uri: uri, isResult: isResult);
   }
 
   /// Calls DELETE api which will emit [Future] dynamic
@@ -177,15 +219,11 @@ class ApiRequestHelper {
       headers.addAll({'Authorization': userToken});
     }
 
-    final response = await http
-        .delete(
-          uri,
-          headers: headers,
-          body: jsonEncode(data),
-        )
-        .timeout(const Duration(minutes: 1));
+    final request = http.Request('DELETE', uri);
+    request.headers.addAll(headers);
+    request.body = jsonEncode(data);
 
-    return _returnResponse(response: response, isResult: isResult, uri: uri);
+    return _sendRequest(request: request, uri: uri, isResult: isResult);
   }
 
   /// Calls GET api which will emit [Future] of Uint8List
@@ -206,13 +244,39 @@ class ApiRequestHelper {
     return byteFile;
   }
 
-  dynamic _returnResponse({
-    required http.Response response,
+  Future<dynamic> _sendRequest({
+    required http.BaseRequest request,
     required Uri uri,
     bool isResult = true,
-  }) {
+  }) async {
+    try {
+      final response =
+          await _client.send(request).timeout(const Duration(minutes: 1));
+
+      return _returnResponse(response: response, uri: uri, isResult: isResult);
+    } on SocketException catch (error, stackTrace) {
+      throw ServiceException(
+        code: 'socket-exception',
+        message: error.message,
+        stackTrace: stackTrace,
+      );
+    } on FormatException catch (error, stackTrace) {
+      throw ServiceException(
+        code: 'format-exception',
+        message: error.message,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  Future<dynamic> _returnResponse({
+    required http.StreamedResponse response,
+    required Uri uri,
+    bool isResult = true,
+  }) async {
+    final stringBody = await response.stream.bytesToString();
     num statusCode = response.statusCode;
-    final mappedResponse = json.decode(response.body) as Map<String, dynamic>;
+    final mappedResponse = json.decode(stringBody) as Map<String, dynamic>;
 
     if (statusCode == 200 && mappedResponse['status'] != 200) {
       statusCode = num.parse(mappedResponse['status'].toString());
