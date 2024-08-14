@@ -48,6 +48,8 @@ class ApiRequestHelper {
     bool isResult = true,
     ContentType contentType = ContentType.json,
   }) async {
+    String responseBody;
+    num statusCode;
     final headers = {
       'Content-Type': contentType.value,
       'x-api-token': xApiToken,
@@ -65,8 +67,14 @@ class ApiRequestHelper {
         )
         .timeout(const Duration(minutes: 1));
 
+    responseBody = response.body;
+    statusCode = response.statusCode;
+
+    print('Finish GET');
+
     return RequestFunctions.getResponse(
-      response: response,
+      responseBody: responseBody,
+      statusCode: statusCode,
       isResult: isResult,
       uri: uri,
       statusController: _controller,
@@ -79,11 +87,13 @@ class ApiRequestHelper {
   Future<dynamic> post({
     required Uri uri,
     required Map<String, dynamic> data,
-    Map<String, dynamic>? fileData,
+    Map<String, String>? fileData,
     String? userToken,
     bool isResult = true,
     ContentType contentType = ContentType.json,
   }) async {
+    String responseBody;
+    num statusCode;
     final headers = {
       'Content-Type': contentType.value,
       'x-api-token': xApiToken,
@@ -94,15 +104,37 @@ class ApiRequestHelper {
       headers.addAll({'Authorization': userToken});
     }
 
-    final response = await http
-        .post(
-          uri,
-          headers: headers,
-          body: jsonEncode(data),
-        )
-        .timeout(const Duration(minutes: 1));
+    if (contentType == ContentType.formData) {
+      final request = await RequestFunctions.getMultipartRequest(
+        uri: uri,
+        data: data,
+        method: 'POST',
+        headers: headers,
+        fileData: fileData,
+      );
+
+      final response = await request.send().timeout(const Duration(minutes: 1));
+
+      statusCode = response.statusCode;
+      responseBody = await response.stream.bytesToString();
+    } else {
+      final response = await http
+          .post(
+            uri,
+            headers: headers,
+            body: jsonEncode(data),
+          )
+          .timeout(const Duration(minutes: 1));
+
+      statusCode = response.statusCode;
+      responseBody = response.body;
+    }
+
+    print('Finish POST');
+
     return RequestFunctions.getResponse(
-      response: response,
+      responseBody: responseBody,
+      statusCode: statusCode,
       isResult: isResult,
       uri: uri,
       statusController: _controller,
@@ -115,11 +147,13 @@ class ApiRequestHelper {
   Future<dynamic> patch({
     required Uri uri,
     required Map<String, dynamic> data,
-    Map<String, dynamic>? fileData,
+    Map<String, String>? fileData,
     String? userToken,
     bool isResult = true,
     ContentType contentType = ContentType.json,
   }) async {
+    String responseBody;
+    num statusCode;
     final headers = {
       'Content-Type': contentType.value,
       'x-api-token': xApiToken,
@@ -130,15 +164,35 @@ class ApiRequestHelper {
       headers.addAll({'Authorization': userToken});
     }
 
-    final response = await http
-        .patch(
-          uri,
-          headers: headers,
-          body: jsonEncode(data),
-        )
-        .timeout(const Duration(minutes: 1));
+    if (contentType == ContentType.formData) {
+      final request = await RequestFunctions.getMultipartRequest(
+        uri: uri,
+        data: data,
+        method: 'PATCH',
+        headers: headers,
+        fileData: fileData,
+      );
+
+      final response = await request.send().timeout(const Duration(minutes: 1));
+
+      statusCode = response.statusCode;
+      responseBody = await response.stream.bytesToString();
+    } else {
+      final response = await http
+          .patch(
+            uri,
+            headers: headers,
+            body: jsonEncode(data),
+          )
+          .timeout(const Duration(minutes: 1));
+
+      statusCode = response.statusCode;
+      responseBody = response.body;
+    }
+
     return RequestFunctions.getResponse(
-      response: response,
+      responseBody: responseBody,
+      statusCode: statusCode,
       isResult: isResult,
       uri: uri,
       statusController: _controller,
@@ -151,11 +205,13 @@ class ApiRequestHelper {
   Future<dynamic> put({
     required Uri uri,
     required Map<String, dynamic> data,
-    Map<String, dynamic>? fileData,
+    Map<String, String>? fileData,
     String? userToken,
     bool isResult = true,
     ContentType contentType = ContentType.json,
   }) async {
+    String responseBody;
+    num statusCode;
     final headers = {
       'Content-Type': contentType.value,
       'x-api-token': xApiToken,
@@ -166,15 +222,35 @@ class ApiRequestHelper {
       headers.addAll({'Authorization': userToken});
     }
 
-    final response = await http
-        .put(
-          uri,
-          headers: headers,
-          body: jsonEncode(data),
-        )
-        .timeout(const Duration(minutes: 1));
+    if (contentType == ContentType.formData) {
+      final request = await RequestFunctions.getMultipartRequest(
+        uri: uri,
+        data: data,
+        method: 'PUT',
+        headers: headers,
+        fileData: fileData,
+      );
+
+      final response = await request.send().timeout(const Duration(minutes: 1));
+
+      statusCode = response.statusCode;
+      responseBody = await response.stream.bytesToString();
+    } else {
+      final response = await http
+          .put(
+            uri,
+            headers: headers,
+            body: jsonEncode(data),
+          )
+          .timeout(const Duration(minutes: 1));
+
+      statusCode = response.statusCode;
+      responseBody = response.body;
+    }
+
     return RequestFunctions.getResponse(
-      response: response,
+      responseBody: responseBody,
+      statusCode: statusCode,
       isResult: isResult,
       uri: uri,
       statusController: _controller,
@@ -191,6 +267,8 @@ class ApiRequestHelper {
     bool isResult = true,
     ContentType contentType = ContentType.json,
   }) async {
+    String responseBody;
+    num statusCode;
     final headers = {
       'Content-Type': contentType.value,
       'x-api-token': xApiToken,
@@ -209,8 +287,12 @@ class ApiRequestHelper {
         )
         .timeout(const Duration(minutes: 1));
 
+    statusCode = response.statusCode;
+    responseBody = response.body;
+
     return RequestFunctions.getResponse(
-      response: response,
+      responseBody: responseBody,
+      statusCode: statusCode,
       isResult: isResult,
       uri: uri,
       statusController: _controller,
