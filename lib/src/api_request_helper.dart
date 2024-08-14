@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:typed_data';
 
+import 'package:api_request_helper_flutter/api_request_helper_flutter.dart';
 import 'package:exceptions_flutter/exceptions_flutter.dart';
 import 'package:hashids2/hashids2.dart';
 import 'package:http/http.dart' as http;
@@ -46,9 +47,12 @@ class ApiRequestHelper {
     required Uri uri,
     String? userToken,
     bool isResult = true,
+    ContentType contentType = ContentType.json,
   }) async {
+    String responseBody;
+    num statusCode;
     final headers = {
-      'Content-Type': 'application/json',
+      'Content-Type': contentType.value,
       'x-api-token': xApiToken,
       'x-api-key': xApiKey,
     };
@@ -63,7 +67,19 @@ class ApiRequestHelper {
           headers: headers,
         )
         .timeout(const Duration(minutes: 1));
-    return _returnResponse(response: response, isResult: isResult, uri: uri);
+
+    responseBody = response.body;
+    statusCode = response.statusCode;
+
+    log('Finish GET');
+
+    return RequestFunctions.getResponse(
+      responseBody: responseBody,
+      statusCode: statusCode,
+      isResult: isResult,
+      uri: uri,
+      statusController: _controller,
+    );
   }
 
   /// Calls POST api which will emit [Future] dynamic
@@ -72,11 +88,15 @@ class ApiRequestHelper {
   Future<dynamic> post({
     required Uri uri,
     required Map<String, dynamic> data,
+    Map<String, String>? fileData,
     String? userToken,
     bool isResult = true,
+    ContentType contentType = ContentType.json,
   }) async {
+    String responseBody;
+    num statusCode;
     final headers = {
-      'Content-Type': 'application/json',
+      'Content-Type': contentType.value,
       'x-api-token': xApiToken,
       'x-api-key': xApiKey,
     };
@@ -85,14 +105,41 @@ class ApiRequestHelper {
       headers.addAll({'Authorization': userToken});
     }
 
-    final response = await http
-        .post(
-          uri,
-          headers: headers,
-          body: jsonEncode(data),
-        )
-        .timeout(const Duration(minutes: 1));
-    return _returnResponse(response: response, isResult: isResult, uri: uri);
+    if (contentType == ContentType.formData) {
+      final request = await RequestFunctions.getMultipartRequest(
+        uri: uri,
+        data: data,
+        method: 'POST',
+        headers: headers,
+        fileData: fileData,
+      );
+
+      final response = await request.send().timeout(const Duration(minutes: 1));
+
+      statusCode = response.statusCode;
+      responseBody = await response.stream.bytesToString();
+    } else {
+      final response = await http
+          .post(
+            uri,
+            headers: headers,
+            body: jsonEncode(data),
+          )
+          .timeout(const Duration(minutes: 1));
+
+      statusCode = response.statusCode;
+      responseBody = response.body;
+    }
+
+    log('Finish POST');
+
+    return RequestFunctions.getResponse(
+      responseBody: responseBody,
+      statusCode: statusCode,
+      isResult: isResult,
+      uri: uri,
+      statusController: _controller,
+    );
   }
 
   /// Calls PATCH api which will emit [Future] dynamic
@@ -101,11 +148,15 @@ class ApiRequestHelper {
   Future<dynamic> patch({
     required Uri uri,
     required Map<String, dynamic> data,
+    Map<String, String>? fileData,
     String? userToken,
     bool isResult = true,
+    ContentType contentType = ContentType.json,
   }) async {
+    String responseBody;
+    num statusCode;
     final headers = {
-      'Content-Type': 'application/json',
+      'Content-Type': contentType.value,
       'x-api-token': xApiToken,
       'x-api-key': xApiKey,
     };
@@ -114,14 +165,39 @@ class ApiRequestHelper {
       headers.addAll({'Authorization': userToken});
     }
 
-    final response = await http
-        .patch(
-          uri,
-          headers: headers,
-          body: jsonEncode(data),
-        )
-        .timeout(const Duration(minutes: 1));
-    return _returnResponse(response: response, isResult: isResult, uri: uri);
+    if (contentType == ContentType.formData) {
+      final request = await RequestFunctions.getMultipartRequest(
+        uri: uri,
+        data: data,
+        method: 'PATCH',
+        headers: headers,
+        fileData: fileData,
+      );
+
+      final response = await request.send().timeout(const Duration(minutes: 1));
+
+      statusCode = response.statusCode;
+      responseBody = await response.stream.bytesToString();
+    } else {
+      final response = await http
+          .patch(
+            uri,
+            headers: headers,
+            body: jsonEncode(data),
+          )
+          .timeout(const Duration(minutes: 1));
+
+      statusCode = response.statusCode;
+      responseBody = response.body;
+    }
+
+    return RequestFunctions.getResponse(
+      responseBody: responseBody,
+      statusCode: statusCode,
+      isResult: isResult,
+      uri: uri,
+      statusController: _controller,
+    );
   }
 
   /// Calls PUT api which will emit [Future] dynamic
@@ -130,11 +206,15 @@ class ApiRequestHelper {
   Future<dynamic> put({
     required Uri uri,
     required Map<String, dynamic> data,
+    Map<String, String>? fileData,
     String? userToken,
     bool isResult = true,
+    ContentType contentType = ContentType.json,
   }) async {
+    String responseBody;
+    num statusCode;
     final headers = {
-      'Content-Type': 'application/json',
+      'Content-Type': contentType.value,
       'x-api-token': xApiToken,
       'x-api-key': xApiKey,
     };
@@ -143,14 +223,39 @@ class ApiRequestHelper {
       headers.addAll({'Authorization': userToken});
     }
 
-    final response = await http
-        .put(
-          uri,
-          headers: headers,
-          body: jsonEncode(data),
-        )
-        .timeout(const Duration(minutes: 1));
-    return _returnResponse(response: response, isResult: isResult, uri: uri);
+    if (contentType == ContentType.formData) {
+      final request = await RequestFunctions.getMultipartRequest(
+        uri: uri,
+        data: data,
+        method: 'PUT',
+        headers: headers,
+        fileData: fileData,
+      );
+
+      final response = await request.send().timeout(const Duration(minutes: 1));
+
+      statusCode = response.statusCode;
+      responseBody = await response.stream.bytesToString();
+    } else {
+      final response = await http
+          .put(
+            uri,
+            headers: headers,
+            body: jsonEncode(data),
+          )
+          .timeout(const Duration(minutes: 1));
+
+      statusCode = response.statusCode;
+      responseBody = response.body;
+    }
+
+    return RequestFunctions.getResponse(
+      responseBody: responseBody,
+      statusCode: statusCode,
+      isResult: isResult,
+      uri: uri,
+      statusController: _controller,
+    );
   }
 
   /// Calls DELETE api which will emit [Future] dynamic
@@ -161,9 +266,12 @@ class ApiRequestHelper {
     Map<String, dynamic>? data,
     String? userToken,
     bool isResult = true,
+    ContentType contentType = ContentType.json,
   }) async {
+    String responseBody;
+    num statusCode;
     final headers = {
-      'Content-Type': 'application/json',
+      'Content-Type': contentType.value,
       'x-api-token': xApiToken,
       'x-api-key': xApiKey,
     };
@@ -180,7 +288,16 @@ class ApiRequestHelper {
         )
         .timeout(const Duration(minutes: 1));
 
-    return _returnResponse(response: response, isResult: isResult, uri: uri);
+    statusCode = response.statusCode;
+    responseBody = response.body;
+
+    return RequestFunctions.getResponse(
+      responseBody: responseBody,
+      statusCode: statusCode,
+      isResult: isResult,
+      uri: uri,
+      statusController: _controller,
+    );
   }
 
   /// Calls GET api which will emit [Future] of Uint8List
@@ -199,137 +316,6 @@ class ApiRequestHelper {
           : null,
     );
     return byteFile;
-  }
-
-  dynamic _returnResponse({
-    required http.Response response,
-    required Uri uri,
-    bool isResult = true,
-  }) {
-    num statusCode = response.statusCode;
-    final mappedResponse = json.decode(response.body) as Map<String, dynamic>;
-
-    if (statusCode == 200 && mappedResponse['status'] != 200) {
-      statusCode = num.parse(mappedResponse['status'].toString());
-    }
-
-    _controller.add(statusCode);
-
-    final emoji = switch (statusCode) {
-      != null && >= 200 && < 300 => '✅',
-      != null && >= 300 && < 400 => '🟠',
-      _ => '❌'
-    };
-
-    log('$emoji $statusCode $emoji -- $uri');
-    log('$emoji body $emoji -- json: $mappedResponse, statusCode: '
-        '${mappedResponse['status']}');
-
-    switch (statusCode) {
-      case 200:
-      case 203:
-      case 204:
-      case 214:
-        if (isResult) {
-          return mappedResponse['result'];
-        } else {
-          return mappedResponse;
-        }
-      default:
-        final exception = _getException(
-          statusCode: statusCode,
-          errorMessage: mappedResponse['message'].toString(),
-        );
-        throw exception;
-    }
-  }
-
-  ServiceException _getException({
-    required num statusCode,
-    String? errorMessage,
-  }) {
-    switch (statusCode) {
-      case 301:
-        return const ServiceException(
-          code: 'invalid-credentials',
-          message: 'Credentials are invalid',
-        );
-      case 400:
-        return const ServiceException(
-          code: 'bad-request',
-          message: 'The server could not process the request',
-        );
-      case 401:
-        return const ServiceException(
-          code: 'unauthorized',
-          message: 'Could not authorize user',
-        );
-      case 403:
-        return const ServiceException(
-          code: 'insufficient-permission',
-          message: 'User do not have permission',
-        );
-      case 404:
-        return const ServiceException(
-          code: 'not-found',
-          message: 'Could not retrieve resource',
-        );
-      case 405:
-        return const ServiceException(
-          code: 'method-not-allowed',
-          message: 'Could not perform action',
-        );
-      case 406:
-        return const ServiceException(
-          code: 'not-acceptable',
-          message: 'Could not perform action',
-        );
-      case 408:
-        return const ServiceException(
-          code: 'request-timeout',
-          message: 'Request has timed out',
-        );
-      case 422:
-        return const ServiceException(
-          code: 'unprocessable-entity',
-          message: 'Could not process due to possible semantic errors',
-        );
-      case 428:
-        return const ServiceException(
-          code: 'security-rejections',
-          message: 'Security Rejections',
-        );
-      case 429:
-        return const ServiceException(
-          code: 'too-many-requests',
-          message: 'Too many requests',
-        );
-      case 500:
-        return const ServiceException(
-          code: 'internal-server-error',
-          message: 'Server has encountered issue',
-        );
-      case 502:
-        return const ServiceException(
-          code: 'bad-gateway',
-          message: 'Server received invalid response',
-        );
-      case 503:
-        return const ServiceException(
-          code: 'server-unavailable',
-          message: 'Server is not available',
-        );
-      case 504:
-        return const ServiceException(
-          code: 'gateway-timeout',
-          message: 'Server has timed out',
-        );
-      default:
-        throw ServiceException(
-          code: statusCode.toString(),
-          message: errorMessage,
-        );
-    }
   }
 
   /// Disposes status code stream controller
