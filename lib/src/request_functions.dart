@@ -14,7 +14,8 @@ class RequestFunctions {
   /// - [data] The form data to be uploaded.
   /// - [method] The HTTP method to use for the upload.
   /// - [headers] The HTTP headers to include in the upload.
-  /// - [fileData] The file data to be uploaded. If not provided, a ServiceException will be thrown.
+  /// - [fileData] The file data to be uploaded. If not provided, a
+  /// ServiceException will be thrown.
   ///
   /// Returns:
   /// - A Future that completes when the upload is finished.
@@ -52,12 +53,14 @@ class RequestFunctions {
     }
   }
 
-  /// Handles the HTTP response and emits the status code to the status controller
+  /// Handles the HTTP response and emits the status code to the status
+  /// controller
   ///
   /// Throws a [ServiceException] if the status code is not 200
   ///
   /// Parameters:
-  /// - [response] The HTTP response
+  /// - [responseBody] The body of the HTTP response
+  /// - [statusCode] The status code of the HTTP response
   /// - [uri] The requested URI
   /// - [statusController] The status controller to emit the status code
   /// - [isResult] Whether to return the 'result' field from the response body
