@@ -7,6 +7,51 @@ import 'package:http/http.dart' as http;
 
 /// Class to handle HTTP response and exceptions
 class RequestFunctions {
+  /// Uploads a multipart form to the specified URI.
+  ///
+  /// Parameters:
+  /// - [uri] The URI to upload the form to.
+  /// - [data] The form data to be uploaded.
+  /// - [method] The HTTP method to use for the upload.
+  /// - [headers] The HTTP headers to include in the upload.
+  /// - [fileData] The file data to be uploaded. If not provided, a ServiceException will be thrown.
+  ///
+  /// Returns:
+  /// - A Future that completes when the upload is finished.
+  ///
+  /// Throws:
+  /// - A ServiceException if the file data is empty.
+  static Future<http.MultipartRequest> getMultipartRequest({
+    required Uri uri,
+    required Map<String, dynamic> data,
+    required String method,
+    required Map<String, String> headers,
+    Map<String, String>? fileData,
+  }) async {
+    final files = fileData?.entries ?? [];
+    final body = data.map((key, value) => MapEntry(key, value.toString()));
+
+    if (files.isNotEmpty) {
+      final request = http.MultipartRequest(method, uri);
+      request.headers.addAll(headers);
+      request.fields.addAll(body);
+
+      for (final file in files) {
+        final field = file.key;
+        final fieldPath = file.value;
+
+        request.files.add(await http.MultipartFile.fromPath(field, fieldPath));
+      }
+
+      return request;
+    } else {
+      throw const ServiceException(
+        message: 'File data is empty',
+        code: 'empty-file-data',
+      );
+    }
+  }
+
   /// Handles the HTTP response and emits the status code to the status controller
   ///
   /// Throws a [ServiceException] if the status code is not 200
@@ -17,16 +62,14 @@ class RequestFunctions {
   /// - [statusController] The status controller to emit the status code
   /// - [isResult] Whether to return the 'result' field from the response body
   static dynamic getResponse({
-    required http.Response response,
+    required String responseBody,
+    required num statusCode,
     required Uri uri,
     required StreamController<num> statusController,
     bool isResult = true,
   }) {
-    /// Get the status code from the response
-    num statusCode = response.statusCode;
-
     /// Decode the response body to a map
-    final mappedResponse = json.decode(response.body) as Map<String, dynamic>;
+    final mappedResponse = json.decode(responseBody) as Map<String, dynamic>;
 
     /// If the status code is 200 but the 'status' field in the response body
     /// is not 200, update the status code
