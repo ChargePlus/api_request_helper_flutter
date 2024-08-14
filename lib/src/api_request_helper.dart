@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:api_request_helper_flutter/api_request_helper_flutter.dart';
@@ -70,7 +71,7 @@ class ApiRequestHelper {
     responseBody = response.body;
     statusCode = response.statusCode;
 
-    print('Finish GET');
+    log('Finish GET');
 
     return RequestFunctions.getResponse(
       responseBody: responseBody,
@@ -130,7 +131,7 @@ class ApiRequestHelper {
       responseBody = response.body;
     }
 
-    print('Finish POST');
+    log('Finish POST');
 
     return RequestFunctions.getResponse(
       responseBody: responseBody,
