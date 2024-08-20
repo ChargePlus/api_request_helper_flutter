@@ -32,25 +32,18 @@ class RequestFunctions {
     final files = fileData?.entries ?? [];
     final body = data.map((key, value) => MapEntry(key, value.toString()));
 
-    if (files.isNotEmpty) {
-      final request = http.MultipartRequest(method, uri);
-      request.headers.addAll(headers);
-      request.fields.addAll(body);
+    final request = http.MultipartRequest(method, uri);
+    request.headers.addAll(headers);
+    request.fields.addAll(body);
 
-      for (final file in files) {
-        final field = file.key;
-        final fieldPath = file.value;
+    for (final file in files) {
+      final field = file.key;
+      final fieldPath = file.value;
 
-        request.files.add(await http.MultipartFile.fromPath(field, fieldPath));
-      }
-
-      return request;
-    } else {
-      throw const ServiceException(
-        message: 'File data is empty',
-        code: 'empty-file-data',
-      );
+      request.files.add(await http.MultipartFile.fromPath(field, fieldPath));
     }
+
+    return request;
   }
 
   /// Handles the HTTP response and emits the status code to the status
