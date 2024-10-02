@@ -101,11 +101,17 @@ class RequestFunctions {
         }
       default:
 
-        /// Throw a ServiceException based on the status code and the 'message'
-        /// field in the response body
+        /// Throw a ServiceException based on the status code
+        /// and the 'message' field in the response body
+        /// and the 'displayMessageKey' field in the response body (if any)
+        final result = mappedResponse['result'] as Map<String, dynamic>;
+        final displayMessageKey = result['displayMessageKey'] as String?;
+
         final exception = getException(
           statusCode: statusCode,
           errorMessage: mappedResponse['message'].toString(),
+          displayMessageKey: displayMessageKey,
+          stackTrace: StackTrace.current,
         );
         throw exception;
     }
@@ -119,88 +125,122 @@ class RequestFunctions {
   static ServiceException getException({
     required num statusCode,
     String? errorMessage,
+    String? displayMessageKey,
+    StackTrace? stackTrace,
   }) {
     /// Switch on the status code and return a corresponding [ServiceException]
     switch (statusCode) {
       case 301:
-        return const ServiceException(
+        return ServiceException(
           code: 'invalid-credentials',
           message: 'Credentials are invalid',
+          displayMessageKey: displayMessageKey,
+          stackTrace: stackTrace,
         );
       case 400:
-        return const ServiceException(
+        return ServiceException(
           code: 'bad-request',
           message: 'The server could not process the request',
+          displayMessageKey: displayMessageKey,
+          stackTrace: stackTrace,
         );
       case 401:
-        return const ServiceException(
+        return ServiceException(
           code: 'unauthorized',
           message: 'Could not authorize user',
+          displayMessageKey: displayMessageKey,
+          stackTrace: stackTrace,
         );
       case 403:
-        return const ServiceException(
+        return ServiceException(
           code: 'insufficient-permission',
           message: 'User do not have permission',
+          displayMessageKey: displayMessageKey,
+          stackTrace: stackTrace,
         );
       case 404:
-        return const ServiceException(
+        return ServiceException(
           code: 'not-found',
           message: 'Could not retrieve resource',
+          displayMessageKey: displayMessageKey,
+          stackTrace: stackTrace,
         );
       case 405:
-        return const ServiceException(
+        return ServiceException(
           code: 'method-not-allowed',
           message: 'Could not perform action',
+          displayMessageKey: displayMessageKey,
+          stackTrace: stackTrace,
         );
       case 406:
-        return const ServiceException(
+        return ServiceException(
           code: 'not-acceptable',
           message: 'Could not perform action',
+          displayMessageKey: displayMessageKey,
+          stackTrace: stackTrace,
         );
       case 408:
-        return const ServiceException(
+        return ServiceException(
           code: 'request-timeout',
           message: 'Request has timed out',
+          displayMessageKey: displayMessageKey,
+          stackTrace: stackTrace,
         );
       case 422:
-        return const ServiceException(
+        return ServiceException(
           code: 'unprocessable-entity',
           message: 'Could not process due to possible semantic errors',
+          displayMessageKey: displayMessageKey,
+          stackTrace: stackTrace,
         );
       case 428:
-        return const ServiceException(
+        return ServiceException(
           code: 'security-rejections',
           message: 'Security Rejections',
+          displayMessageKey: displayMessageKey,
+          stackTrace: stackTrace,
         );
       case 429:
-        return const ServiceException(
+        return ServiceException(
           code: 'too-many-requests',
           message: 'Too many requests',
+          displayMessageKey: displayMessageKey,
+          stackTrace: stackTrace,
         );
       case 500:
-        return const ServiceException(
+        return ServiceException(
           code: 'internal-server-error',
           message: 'Server has encountered issue',
+          displayMessageKey: displayMessageKey,
+          stackTrace: stackTrace,
         );
       case 502:
-        return const ServiceException(
+        return ServiceException(
           code: 'bad-gateway',
           message: 'Server received invalid response',
+          displayMessageKey: displayMessageKey,
+          stackTrace: stackTrace,
         );
       case 503:
-        return const ServiceException(
+        return ServiceException(
           code: 'server-unavailable',
           message: 'Server is not available',
+          displayMessageKey: displayMessageKey,
+          stackTrace: stackTrace,
         );
       case 504:
-        return const ServiceException(
+        return ServiceException(
           code: 'gateway-timeout',
           message: 'Server has timed out',
+          displayMessageKey: displayMessageKey,
+          stackTrace: stackTrace,
         );
       default:
-        throw ServiceException(
+        return ServiceException(
           code: statusCode.toString(),
           message: errorMessage,
+          displayMessageKey: displayMessageKey,
+          stackTrace: stackTrace,
         );
     }
   }
