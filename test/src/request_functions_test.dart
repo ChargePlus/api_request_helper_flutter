@@ -1,4 +1,8 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:api_request_helper_flutter/src/request_functions.dart';
+import 'package:exceptions_flutter/exceptions_flutter.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -8,7 +12,102 @@ void main() {
     });
 
     group('getResponse', () {
-      // Tests go here
+      final mockUri = Uri.parse('https://example.com/api');
+
+      group('status code 200 with status 200 in response', () {
+        const responseBody = '{"status":200,"result":{"data":"success"}}';
+        const statusCode = 200;
+        final responseJson = json.decode(responseBody) as Map<String, dynamic>;
+
+        test('status controller emits 200', () async {
+          final statusController = StreamController<num>();
+          final emittedStatusCodes = <num>[];
+          statusController.stream.listen(emittedStatusCodes.add);
+
+          RequestFunctions.getResponse(
+            responseBody: responseBody,
+            statusCode: statusCode,
+            uri: mockUri,
+            statusController: statusController,
+          );
+          await statusController.close();
+
+          expect(emittedStatusCodes, equals([200]));
+        });
+
+        test('returns result', () {
+          final result = RequestFunctions.getResponse(
+            responseBody: responseBody,
+            statusCode: statusCode,
+            uri: mockUri,
+            statusController: StreamController<num>(),
+          );
+
+          expect(result, equals(responseJson['result']));
+        });
+
+        test('returns response body', () {
+          final result = RequestFunctions.getResponse(
+            responseBody: responseBody,
+            statusCode: statusCode,
+            uri: mockUri,
+            statusController: StreamController<num>(),
+            isResult: false,
+          );
+
+          expect(result, equals(responseJson));
+        });
+      });
+
+      group('status code 200 with status of non 200 in response', () {
+        test('status controller emits 300', () async {
+          final statusController = StreamController<num>();
+          final emittedStatusCodes = <num>[];
+          statusController.stream.listen(emittedStatusCodes.add);
+
+          try {
+            RequestFunctions.getResponse(
+              responseBody: '{"status":300,"result":{"data":"success"}}',
+              statusCode: 200,
+              uri: mockUri,
+              statusController: statusController,
+            );
+            fail('Should have thrown an exception');
+          } catch (e) {
+            expect(e, isA<ServiceException>());
+            expect((e as ServiceException).code, '300');
+          }
+
+          await statusController.close();
+          expect(emittedStatusCodes, equals([300]));
+        });
+
+        test('status controller emits 400', () async {
+          final statusController = StreamController<num>();
+          final emittedStatusCodes = <num>[];
+          statusController.stream.listen(emittedStatusCodes.add);
+
+          try {
+            RequestFunctions.getResponse(
+              responseBody:
+                  '''{"status":400,"result":{"display_message_key":"auth-sendOTPError"}}''',
+              statusCode: 200,
+              uri: mockUri,
+              statusController: statusController,
+            );
+            fail('Should have thrown an exception');
+          } catch (e) {
+            expect(e, isA<ServiceException>());
+            final error = e as ServiceException;
+            expect(error.code, 'bad-request');
+            expect(error.message, 'The server could not process the request');
+            expect(error.displayMessageKey, 'auth-sendOTPError');
+          }
+
+          await statusController.close();
+          expect(emittedStatusCodes, equals([400]));
+        });
+      });
     });
 
     group('getException', () {

@@ -105,7 +105,7 @@ class RequestFunctions {
         /// and the 'message' field in the response body
         /// and the 'displayMessageKey' field in the response body (if any)
         final result = mappedResponse['result'] as Map<String, dynamic>;
-        final displayMessageKey = result['displayMessageKey'] as String?;
+        final displayMessageKey = result['display_message_key'] as String?;
 
         final exception = getException(
           statusCode: statusCode,
