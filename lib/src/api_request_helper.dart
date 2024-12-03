@@ -60,6 +60,10 @@ class ApiRequestHelper {
       headers.addAll({'Authorization': userToken});
     }
 
+    if (contentType == ContentType.json) {
+      headers.addAll({'Accept': contentType.value});
+    }
+
     final response = await http
         .get(
           uri,
@@ -97,6 +101,10 @@ class ApiRequestHelper {
       'x-api-token': xApiToken,
       'x-api-key': xApiKey,
     };
+
+    if (contentType == ContentType.json) {
+      headers.addAll({'Accept': contentType.value});
+    }
 
     if (userToken != null) {
       headers.addAll({'Authorization': userToken});
@@ -156,6 +164,10 @@ class ApiRequestHelper {
       'x-api-key': xApiKey,
     };
 
+    if (contentType == ContentType.json) {
+      headers.addAll({'Accept': contentType.value});
+    }
+
     if (userToken != null) {
       headers.addAll({'Authorization': userToken});
     }
@@ -214,6 +226,10 @@ class ApiRequestHelper {
       'x-api-key': xApiKey,
     };
 
+    if (contentType == ContentType.json) {
+      headers.addAll({'Accept': contentType.value});
+    }
+
     if (userToken != null) {
       headers.addAll({'Authorization': userToken});
     }
@@ -270,6 +286,10 @@ class ApiRequestHelper {
       'x-api-token': xApiToken,
       'x-api-key': xApiKey,
     };
+
+    if (contentType == ContentType.json) {
+      headers.addAll({'Accept': contentType.value});
+    }
 
     if (userToken != null) {
       headers.addAll({'Authorization': userToken});
