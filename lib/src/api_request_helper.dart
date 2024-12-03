@@ -62,6 +62,10 @@ class ApiRequestHelper {
       'platform': kIsWeb ? 'web' : Platform.operatingSystem,
     };
 
+    if (contentType == ContentType.json) {
+      headers['Accept'] = contentType.value;
+    }
+
     if (userToken != null) {
       headers['Authorization'] = userToken;
     }
