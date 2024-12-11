@@ -21,7 +21,7 @@ class ApiRequestHelper {
   final xApiKey = const String.fromEnvironment('XAPI_KEY');
 
   /// Charge+ host name
-  final chargeplusHostName = 'api.chargeplus.co';
+  final chargeplusDomain = 'chargeplus.co';
 
   /// Convenient getter for status code
   Stream<num> get statusCode async* {
@@ -51,7 +51,7 @@ class ApiRequestHelper {
     bool isResult = true,
     ContentType contentType = ContentType.json,
   }) async {
-    final isChargeplus = uri.host.contains(chargeplusHostName);
+    final isChargeplus = uri.host.contains(chargeplusDomain);
     print('is Charge+: $isChargeplus, uri: $uri');
     String responseBody;
     num statusCode;
@@ -95,7 +95,7 @@ class ApiRequestHelper {
     bool isResult = true,
     ContentType contentType = ContentType.json,
   }) async {
-    final isChargeplus = uri.host.contains(chargeplusHostName);
+    final isChargeplus = uri.host.contains(chargeplusDomain);
     print('is Charge+: $isChargeplus, uri: $uri');
 
     String responseBody;
@@ -156,7 +156,7 @@ class ApiRequestHelper {
     bool isResult = true,
     ContentType contentType = ContentType.json,
   }) async {
-    final isChargeplus = uri.host.contains(chargeplusHostName);
+    final isChargeplus = uri.host.contains(chargeplusDomain);
     print('is Charge+: $isChargeplus, uri: $uri');
 
     String responseBody;
@@ -217,7 +217,7 @@ class ApiRequestHelper {
     bool isResult = true,
     ContentType contentType = ContentType.json,
   }) async {
-    final isChargeplus = uri.host.contains(chargeplusHostName);
+    final isChargeplus = uri.host.contains(chargeplusDomain);
     print('is Charge+: $isChargeplus, uri: $uri');
 
     String responseBody;
@@ -277,7 +277,7 @@ class ApiRequestHelper {
     bool isResult = true,
     ContentType contentType = ContentType.json,
   }) async {
-    final isChargeplus = uri.host.contains(chargeplusHostName);
+    final isChargeplus = uri.host.contains(chargeplusDomain);
     print('is Charge+: $isChargeplus, uri: $uri');
 
     String responseBody;
