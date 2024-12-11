@@ -52,7 +52,7 @@ class ApiRequestHelper {
     ContentType contentType = ContentType.json,
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
-    print('is Charge+: $isChargeplus, uri: $uri, uri host: ${uri.host}');
+
     String responseBody;
     num statusCode;
     final headers = {
@@ -68,7 +68,7 @@ class ApiRequestHelper {
     final response = await http
         .get(
           uri,
-          headers: headers,
+          headers: isChargeplus ? headers : null,
         )
         .timeout(const Duration(minutes: 1));
 
@@ -96,7 +96,6 @@ class ApiRequestHelper {
     ContentType contentType = ContentType.json,
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
-    print('is Charge+: $isChargeplus, uri: $uri, uri host: ${uri.host}');
 
     String responseBody;
     num statusCode;
@@ -127,7 +126,7 @@ class ApiRequestHelper {
       final response = await http
           .post(
             uri,
-            headers: headers,
+            headers: isChargeplus ? headers : null,
             body: jsonEncode(data),
           )
           .timeout(const Duration(minutes: 1));
@@ -157,7 +156,6 @@ class ApiRequestHelper {
     ContentType contentType = ContentType.json,
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
-    print('is Charge+: $isChargeplus, uri: $uri, uri host: ${uri.host}');
 
     String responseBody;
     num statusCode;
@@ -176,7 +174,7 @@ class ApiRequestHelper {
         uri: uri,
         data: data,
         method: 'PATCH',
-        headers: headers,
+        headers: isChargeplus ? headers : {},
         fileData: fileData,
       );
 
@@ -188,7 +186,7 @@ class ApiRequestHelper {
       final response = await http
           .patch(
             uri,
-            headers: headers,
+            headers: isChargeplus ? headers : null,
             body: jsonEncode(data),
           )
           .timeout(const Duration(minutes: 1));
@@ -218,7 +216,6 @@ class ApiRequestHelper {
     ContentType contentType = ContentType.json,
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
-    print('is Charge+: $isChargeplus, uri: $uri, uri host: ${uri.host}');
 
     String responseBody;
     num statusCode;
@@ -237,7 +234,7 @@ class ApiRequestHelper {
         uri: uri,
         data: data,
         method: 'PUT',
-        headers: headers,
+        headers: isChargeplus ? headers : {},
         fileData: fileData,
       );
 
@@ -249,7 +246,7 @@ class ApiRequestHelper {
       final response = await http
           .put(
             uri,
-            headers: headers,
+            headers: isChargeplus ? headers : null,
             body: jsonEncode(data),
           )
           .timeout(const Duration(minutes: 1));
@@ -278,7 +275,6 @@ class ApiRequestHelper {
     ContentType contentType = ContentType.json,
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
-    print('is Charge+: $isChargeplus, uri: $uri, uri host: ${uri.host}');
 
     String responseBody;
     num statusCode;
@@ -295,7 +291,7 @@ class ApiRequestHelper {
     final response = await http
         .delete(
           uri,
-          headers: headers,
+          headers: isChargeplus ? headers : null,
           body: jsonEncode(data),
         )
         .timeout(const Duration(minutes: 1));
