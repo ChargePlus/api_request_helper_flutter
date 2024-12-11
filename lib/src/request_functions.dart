@@ -62,6 +62,7 @@ class RequestFunctions {
     required num statusCode,
     required Uri uri,
     required StreamController<num> statusController,
+    Map<String, dynamic> data = const {},
     bool isResult = true,
   }) {
     /// Decode the response body to a map
@@ -82,7 +83,7 @@ class RequestFunctions {
       != null && >= 300 && < 400 => '🟠', // Log a warning emoji
       _ => '❌' // Log an error emoji
     };
-    log('$emoji $statusCode $emoji -- $uri');
+    log('$emoji $statusCode $emoji -- $uri,\ndata: $data');
 
     /// Log the response body and the status code in the response body
     log('$emoji body $emoji -- json: $mappedResponse, statusCode: '

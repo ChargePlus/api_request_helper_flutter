@@ -140,6 +140,7 @@ class ApiRequestHelper {
       statusCode: statusCode,
       isResult: isResult,
       uri: uri,
+      data: data,
       statusController: _controller,
     );
   }
@@ -200,6 +201,7 @@ class ApiRequestHelper {
       statusCode: statusCode,
       isResult: isResult,
       uri: uri,
+      data: data,
       statusController: _controller,
     );
   }
@@ -260,6 +262,7 @@ class ApiRequestHelper {
       statusCode: statusCode,
       isResult: isResult,
       uri: uri,
+      data: data,
       statusController: _controller,
     );
   }
@@ -304,6 +307,7 @@ class ApiRequestHelper {
       statusCode: statusCode,
       isResult: isResult,
       uri: uri,
+      data: data ?? {},
       statusController: _controller,
     );
   }
