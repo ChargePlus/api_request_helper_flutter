@@ -95,6 +95,8 @@ class ApiRequestHelper {
     bool isResult = true,
     ContentType contentType = ContentType.json,
   }) async {
+    final isChargeplus = uri.host.contains(chargeplusHostName);
+    print('is Charge+: $isChargeplus');
     String responseBody;
     num statusCode;
     final headers = {
@@ -153,6 +155,8 @@ class ApiRequestHelper {
     bool isResult = true,
     ContentType contentType = ContentType.json,
   }) async {
+    final isChargeplus = uri.host.contains(chargeplusHostName);
+    print('is Charge+: $isChargeplus');
     String responseBody;
     num statusCode;
     final headers = {
@@ -211,6 +215,8 @@ class ApiRequestHelper {
     bool isResult = true,
     ContentType contentType = ContentType.json,
   }) async {
+    final isChargeplus = uri.host.contains(chargeplusHostName);
+    print('is Charge+: $isChargeplus');
     String responseBody;
     num statusCode;
     final headers = {
@@ -268,6 +274,8 @@ class ApiRequestHelper {
     bool isResult = true,
     ContentType contentType = ContentType.json,
   }) async {
+    final isChargeplus = uri.host.contains(chargeplusHostName);
+    print('is Charge+: $isChargeplus');
     String responseBody;
     num statusCode;
     final headers = {
