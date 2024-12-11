@@ -20,6 +20,9 @@ class ApiRequestHelper {
   /// X-API key
   final xApiKey = const String.fromEnvironment('XAPI_KEY');
 
+  /// Charge+ host name
+  final chargeplusHostName = 'api.chargeplus.co';
+
   /// Convenient getter for status code
   Stream<num> get statusCode async* {
     yield* _controller.stream;
@@ -48,6 +51,8 @@ class ApiRequestHelper {
     bool isResult = true,
     ContentType contentType = ContentType.json,
   }) async {
+    final isChargeplus = uri.host.contains(chargeplusHostName);
+    print('is Charge+: $isChargeplus');
     String responseBody;
     num statusCode;
     final headers = {
