@@ -20,6 +20,9 @@ class ApiRequestHelper {
   /// X-API key
   final xApiKey = const String.fromEnvironment('XAPI_KEY');
 
+  /// Charge+ host name
+  final chargeplusDomain = 'chargeplus.co';
+
   /// Convenient getter for status code
   Stream<num> get statusCode async* {
     yield* _controller.stream;
@@ -48,6 +51,8 @@ class ApiRequestHelper {
     bool isResult = true,
     ContentType contentType = ContentType.json,
   }) async {
+    final isChargeplus = uri.host.contains(chargeplusDomain);
+
     String responseBody;
     num statusCode;
     final headers = {
@@ -63,7 +68,7 @@ class ApiRequestHelper {
     final response = await http
         .get(
           uri,
-          headers: headers,
+          headers: isChargeplus ? headers : null,
         )
         .timeout(const Duration(minutes: 1));
 
@@ -90,6 +95,8 @@ class ApiRequestHelper {
     bool isResult = true,
     ContentType contentType = ContentType.json,
   }) async {
+    final isChargeplus = uri.host.contains(chargeplusDomain);
+
     String responseBody;
     num statusCode;
     final headers = {
@@ -119,7 +126,7 @@ class ApiRequestHelper {
       final response = await http
           .post(
             uri,
-            headers: headers,
+            headers: isChargeplus ? headers : null,
             body: jsonEncode(data),
           )
           .timeout(const Duration(minutes: 1));
@@ -133,6 +140,7 @@ class ApiRequestHelper {
       statusCode: statusCode,
       isResult: isResult,
       uri: uri,
+      data: data,
       statusController: _controller,
     );
   }
@@ -148,6 +156,8 @@ class ApiRequestHelper {
     bool isResult = true,
     ContentType contentType = ContentType.json,
   }) async {
+    final isChargeplus = uri.host.contains(chargeplusDomain);
+
     String responseBody;
     num statusCode;
     final headers = {
@@ -165,7 +175,7 @@ class ApiRequestHelper {
         uri: uri,
         data: data,
         method: 'PATCH',
-        headers: headers,
+        headers: isChargeplus ? headers : {},
         fileData: fileData,
       );
 
@@ -177,7 +187,7 @@ class ApiRequestHelper {
       final response = await http
           .patch(
             uri,
-            headers: headers,
+            headers: isChargeplus ? headers : null,
             body: jsonEncode(data),
           )
           .timeout(const Duration(minutes: 1));
@@ -191,6 +201,7 @@ class ApiRequestHelper {
       statusCode: statusCode,
       isResult: isResult,
       uri: uri,
+      data: data,
       statusController: _controller,
     );
   }
@@ -206,6 +217,8 @@ class ApiRequestHelper {
     bool isResult = true,
     ContentType contentType = ContentType.json,
   }) async {
+    final isChargeplus = uri.host.contains(chargeplusDomain);
+
     String responseBody;
     num statusCode;
     final headers = {
@@ -223,7 +236,7 @@ class ApiRequestHelper {
         uri: uri,
         data: data,
         method: 'PUT',
-        headers: headers,
+        headers: isChargeplus ? headers : {},
         fileData: fileData,
       );
 
@@ -235,7 +248,7 @@ class ApiRequestHelper {
       final response = await http
           .put(
             uri,
-            headers: headers,
+            headers: isChargeplus ? headers : null,
             body: jsonEncode(data),
           )
           .timeout(const Duration(minutes: 1));
@@ -249,6 +262,7 @@ class ApiRequestHelper {
       statusCode: statusCode,
       isResult: isResult,
       uri: uri,
+      data: data,
       statusController: _controller,
     );
   }
@@ -263,6 +277,8 @@ class ApiRequestHelper {
     bool isResult = true,
     ContentType contentType = ContentType.json,
   }) async {
+    final isChargeplus = uri.host.contains(chargeplusDomain);
+
     String responseBody;
     num statusCode;
     final headers = {
@@ -278,7 +294,7 @@ class ApiRequestHelper {
     final response = await http
         .delete(
           uri,
-          headers: headers,
+          headers: isChargeplus ? headers : null,
           body: jsonEncode(data),
         )
         .timeout(const Duration(minutes: 1));
@@ -291,6 +307,7 @@ class ApiRequestHelper {
       statusCode: statusCode,
       isResult: isResult,
       uri: uri,
+      data: data ?? {},
       statusController: _controller,
     );
   }
