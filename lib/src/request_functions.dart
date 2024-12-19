@@ -70,7 +70,9 @@ class RequestFunctions {
 
     /// If the status code is 200 but the 'status' field in the response body
     /// is not 200, update the status code
-    if (statusCode == 200 && mappedResponse['status'] != 200) {
+    if (statusCode == 200 &&
+        mappedResponse.containsKey('status') &&
+        mappedResponse['status'] != 200) {
       statusCode = num.parse(mappedResponse['status'].toString());
     }
 
@@ -107,10 +109,16 @@ class RequestFunctions {
         /// and the 'displayMessageKey' field in the response body (if any)
         final result = mappedResponse['result'] as Map<String, dynamic>;
         final displayMessageKey = result['display_message_key'] as String?;
+        
+        final errorMessage = mappedResponse.containsKey('message')
+            ? mappedResponse['message'] as String?
+            : mappedResponse.containsKey('msg')
+                ? mappedResponse['msg'] as String?
+                : null;
 
         final exception = getException(
           statusCode: statusCode,
-          errorMessage: mappedResponse['message'].toString(),
+          errorMessage: errorMessage,
           displayMessageKey: displayMessageKey,
           stackTrace: StackTrace.current,
         );
