@@ -109,7 +109,7 @@ class RequestFunctions {
         /// and the 'displayMessageKey' field in the response body (if any)
         final result = mappedResponse['result'] as Map<String, dynamic>;
         final displayMessageKey = result['display_message_key'] as String?;
-        
+
         final errorMessage = mappedResponse.containsKey('message')
             ? mappedResponse['message'] as String?
             : mappedResponse.containsKey('msg')
