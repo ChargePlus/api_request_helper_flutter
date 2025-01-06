@@ -50,6 +50,7 @@ class ApiRequestHelper {
     String? userToken,
     bool isResult = true,
     ContentType contentType = ContentType.json,
+    Duration timeout = const Duration(minutes: 1),
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
 
@@ -70,7 +71,7 @@ class ApiRequestHelper {
           uri,
           headers: isChargeplus ? headers : null,
         )
-        .timeout(const Duration(minutes: 1));
+        .timeout(timeout);
 
     responseBody = response.body;
     statusCode = response.statusCode;
@@ -94,6 +95,7 @@ class ApiRequestHelper {
     String? userToken,
     bool isResult = true,
     ContentType contentType = ContentType.json,
+    Duration timeout = const Duration(minutes: 1),
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
 
@@ -118,7 +120,7 @@ class ApiRequestHelper {
         fileData: fileData,
       );
 
-      final response = await request.send().timeout(const Duration(minutes: 1));
+      final response = await request.send().timeout(timeout);
 
       statusCode = response.statusCode;
       responseBody = await response.stream.bytesToString();
@@ -129,7 +131,7 @@ class ApiRequestHelper {
             headers: isChargeplus ? headers : null,
             body: jsonEncode(data),
           )
-          .timeout(const Duration(minutes: 1));
+          .timeout(timeout);
 
       statusCode = response.statusCode;
       responseBody = response.body;
@@ -155,6 +157,7 @@ class ApiRequestHelper {
     String? userToken,
     bool isResult = true,
     ContentType contentType = ContentType.json,
+    Duration timeout = const Duration(minutes: 1),
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
 
@@ -179,7 +182,7 @@ class ApiRequestHelper {
         fileData: fileData,
       );
 
-      final response = await request.send().timeout(const Duration(minutes: 1));
+      final response = await request.send().timeout(timeout);
 
       statusCode = response.statusCode;
       responseBody = await response.stream.bytesToString();
@@ -190,7 +193,7 @@ class ApiRequestHelper {
             headers: isChargeplus ? headers : null,
             body: jsonEncode(data),
           )
-          .timeout(const Duration(minutes: 1));
+          .timeout(timeout);
 
       statusCode = response.statusCode;
       responseBody = response.body;
@@ -216,6 +219,7 @@ class ApiRequestHelper {
     String? userToken,
     bool isResult = true,
     ContentType contentType = ContentType.json,
+    Duration timeout = const Duration(minutes: 1),
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
 
@@ -240,7 +244,7 @@ class ApiRequestHelper {
         fileData: fileData,
       );
 
-      final response = await request.send().timeout(const Duration(minutes: 1));
+      final response = await request.send().timeout(timeout);
 
       statusCode = response.statusCode;
       responseBody = await response.stream.bytesToString();
@@ -251,7 +255,7 @@ class ApiRequestHelper {
             headers: isChargeplus ? headers : null,
             body: jsonEncode(data),
           )
-          .timeout(const Duration(minutes: 1));
+          .timeout(timeout);
 
       statusCode = response.statusCode;
       responseBody = response.body;
@@ -276,6 +280,7 @@ class ApiRequestHelper {
     String? userToken,
     bool isResult = true,
     ContentType contentType = ContentType.json,
+    Duration timeout = const Duration(minutes: 1),
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
 
@@ -297,7 +302,7 @@ class ApiRequestHelper {
           headers: isChargeplus ? headers : null,
           body: jsonEncode(data),
         )
-        .timeout(const Duration(minutes: 1));
+        .timeout(timeout);
 
     statusCode = response.statusCode;
     responseBody = response.body;
