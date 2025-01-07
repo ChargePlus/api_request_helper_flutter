@@ -1,7 +1,7 @@
 name: api_request_helper_flutter
 description: Api Request Helper Flutter is a repository that handles http calls
   such as GET, POST, PUT, DELETE
-version: 1.7.4+48
+version: 1.7.5+49
 publish_to: none
 
 environment:
@@ -19,4 +19,4 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  very_good_analysis: ^6.0.0
+  very_good_analysis: ^7.0.0
