@@ -101,6 +101,7 @@ class ApiRequestHelper {
     Duration timeout = const Duration(minutes: 1),
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
+    final packageInfo = await PackageInfo.fromPlatform();
 
     String responseBody;
     num statusCode;
@@ -108,6 +109,7 @@ class ApiRequestHelper {
       'Content-Type': contentType.value,
       'x-api-token': xApiToken,
       'x-api-key': xApiKey,
+      'build-number': '${packageInfo.version}+${packageInfo.buildNumber}',
     };
 
     if (userToken != null) {
@@ -163,6 +165,7 @@ class ApiRequestHelper {
     Duration timeout = const Duration(minutes: 1),
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
+    final packageInfo = await PackageInfo.fromPlatform();
 
     String responseBody;
     num statusCode;
@@ -170,6 +173,7 @@ class ApiRequestHelper {
       'Content-Type': contentType.value,
       'x-api-token': xApiToken,
       'x-api-key': xApiKey,
+      'build-number': '${packageInfo.version}+${packageInfo.buildNumber}',
     };
 
     if (userToken != null) {
@@ -225,6 +229,7 @@ class ApiRequestHelper {
     Duration timeout = const Duration(minutes: 1),
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
+    final packageInfo = await PackageInfo.fromPlatform();
 
     String responseBody;
     num statusCode;
@@ -232,6 +237,7 @@ class ApiRequestHelper {
       'Content-Type': contentType.value,
       'x-api-token': xApiToken,
       'x-api-key': xApiKey,
+      'build-number': '${packageInfo.version}+${packageInfo.buildNumber}',
     };
 
     if (userToken != null) {
@@ -286,6 +292,7 @@ class ApiRequestHelper {
     Duration timeout = const Duration(minutes: 1),
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
+    final packageInfo = await PackageInfo.fromPlatform();
 
     String responseBody;
     num statusCode;
@@ -293,6 +300,7 @@ class ApiRequestHelper {
       'Content-Type': contentType.value,
       'x-api-token': xApiToken,
       'x-api-key': xApiKey,
+      'build-number': '${packageInfo.version}+${packageInfo.buildNumber}',
     };
 
     if (userToken != null) {
