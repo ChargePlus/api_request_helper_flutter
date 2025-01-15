@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:api_request_helper_flutter/api_request_helper_flutter.dart';
 import 'package:exceptions_flutter/exceptions_flutter.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hashids2/hashids2.dart';
 import 'package:http/http.dart' as http;
+import 'package:package_info_plus/package_info_plus.dart';
 
 /// {@template api_request_helper_flutter}
 /// Api Request Helper Flutter is a repository that handles http calls such as
@@ -53,6 +54,7 @@ class ApiRequestHelper {
     Duration timeout = const Duration(minutes: 1),
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
+    final packageInfo = await PackageInfo.fromPlatform();
 
     String responseBody;
     num statusCode;
@@ -60,6 +62,7 @@ class ApiRequestHelper {
       'Content-Type': contentType.value,
       'x-api-token': xApiToken,
       'x-api-key': xApiKey,
+      'build-number': '${packageInfo.version}+${packageInfo.buildNumber}',
     };
 
     if (userToken != null) {
@@ -69,7 +72,7 @@ class ApiRequestHelper {
     final response = await http
         .get(
           uri,
-          headers: isChargeplus ? headers : null,
+          headers: isChargeplus || kDebugMode ? headers : null,
         )
         .timeout(timeout);
 
@@ -98,6 +101,7 @@ class ApiRequestHelper {
     Duration timeout = const Duration(minutes: 1),
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
+    final packageInfo = await PackageInfo.fromPlatform();
 
     String responseBody;
     num statusCode;
@@ -105,6 +109,7 @@ class ApiRequestHelper {
       'Content-Type': contentType.value,
       'x-api-token': xApiToken,
       'x-api-key': xApiKey,
+      'build-number': '${packageInfo.version}+${packageInfo.buildNumber}',
     };
 
     if (userToken != null) {
@@ -128,7 +133,7 @@ class ApiRequestHelper {
       final response = await http
           .post(
             uri,
-            headers: isChargeplus ? headers : null,
+            headers: isChargeplus || kDebugMode ? headers : null,
             body: jsonEncode(data),
           )
           .timeout(timeout);
@@ -160,6 +165,7 @@ class ApiRequestHelper {
     Duration timeout = const Duration(minutes: 1),
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
+    final packageInfo = await PackageInfo.fromPlatform();
 
     String responseBody;
     num statusCode;
@@ -167,6 +173,7 @@ class ApiRequestHelper {
       'Content-Type': contentType.value,
       'x-api-token': xApiToken,
       'x-api-key': xApiKey,
+      'build-number': '${packageInfo.version}+${packageInfo.buildNumber}',
     };
 
     if (userToken != null) {
@@ -178,7 +185,7 @@ class ApiRequestHelper {
         uri: uri,
         data: data,
         method: 'PATCH',
-        headers: isChargeplus ? headers : {},
+        headers: isChargeplus || kDebugMode ? headers : {},
         fileData: fileData,
       );
 
@@ -222,6 +229,7 @@ class ApiRequestHelper {
     Duration timeout = const Duration(minutes: 1),
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
+    final packageInfo = await PackageInfo.fromPlatform();
 
     String responseBody;
     num statusCode;
@@ -229,6 +237,7 @@ class ApiRequestHelper {
       'Content-Type': contentType.value,
       'x-api-token': xApiToken,
       'x-api-key': xApiKey,
+      'build-number': '${packageInfo.version}+${packageInfo.buildNumber}',
     };
 
     if (userToken != null) {
@@ -240,7 +249,7 @@ class ApiRequestHelper {
         uri: uri,
         data: data,
         method: 'PUT',
-        headers: isChargeplus ? headers : {},
+        headers: isChargeplus || kDebugMode ? headers : {},
         fileData: fileData,
       );
 
@@ -283,6 +292,7 @@ class ApiRequestHelper {
     Duration timeout = const Duration(minutes: 1),
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
+    final packageInfo = await PackageInfo.fromPlatform();
 
     String responseBody;
     num statusCode;
@@ -290,6 +300,7 @@ class ApiRequestHelper {
       'Content-Type': contentType.value,
       'x-api-token': xApiToken,
       'x-api-key': xApiKey,
+      'build-number': '${packageInfo.version}+${packageInfo.buildNumber}',
     };
 
     if (userToken != null) {
@@ -299,7 +310,7 @@ class ApiRequestHelper {
     final response = await http
         .delete(
           uri,
-          headers: isChargeplus ? headers : null,
+          headers: isChargeplus || kDebugMode ? headers : null,
           body: jsonEncode(data),
         )
         .timeout(timeout);
