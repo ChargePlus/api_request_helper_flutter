@@ -73,7 +73,7 @@ void main() {
               statusController: statusController,
             );
             fail('Should have thrown an exception');
-          } catch (e) {
+          } on Exception catch (e) {
             expect(e, isA<ServiceException>());
             expect((e as ServiceException).code, '300');
           }
@@ -96,7 +96,7 @@ void main() {
               statusController: statusController,
             );
             fail('Should have thrown an exception');
-          } catch (e) {
+          } on Exception catch (e) {
             expect(e, isA<ServiceException>());
             final error = e as ServiceException;
             expect(error.code, 'bad-request');
@@ -118,9 +118,7 @@ void main() {
         const defaultMessage = 'Credentials are invalid';
 
         test('w/o displayMessageKey', () {
-          final exception = RequestFunctions.getException(
-            statusCode: 301,
-          );
+          final exception = RequestFunctions.getException(statusCode: 301);
           expect(exception.code, defaultCode);
           expect(exception.message, defaultMessage);
           expect(exception.displayMessageKey, isNull);
@@ -141,9 +139,7 @@ void main() {
         const defaultMessage = 'The server could not process the request';
 
         test('w/o displayMessageKey', () {
-          final exception = RequestFunctions.getException(
-            statusCode: 400,
-          );
+          final exception = RequestFunctions.getException(statusCode: 400);
           expect(exception.code, defaultCode);
           expect(exception.message, defaultMessage);
           expect(exception.displayMessageKey, isNull);
@@ -164,9 +160,7 @@ void main() {
         const defaultMessage = 'Could not authorize user';
 
         test('w/o displayMessageKey', () {
-          final exception = RequestFunctions.getException(
-            statusCode: 401,
-          );
+          final exception = RequestFunctions.getException(statusCode: 401);
           expect(exception.code, defaultCode);
           expect(exception.message, defaultMessage);
           expect(exception.displayMessageKey, isNull);
@@ -187,9 +181,7 @@ void main() {
         const defaultMessage = 'User do not have permission';
 
         test('w/o displayMessageKey', () {
-          final exception = RequestFunctions.getException(
-            statusCode: 403,
-          );
+          final exception = RequestFunctions.getException(statusCode: 403);
           expect(exception.code, defaultCode);
           expect(exception.message, defaultMessage);
           expect(exception.displayMessageKey, isNull);
@@ -210,9 +202,7 @@ void main() {
         const defaultMessage = 'Could not retrieve resource';
 
         test('w/o displayMessageKey', () {
-          final exception = RequestFunctions.getException(
-            statusCode: 404,
-          );
+          final exception = RequestFunctions.getException(statusCode: 404);
           expect(exception.code, defaultCode);
           expect(exception.message, defaultMessage);
           expect(exception.displayMessageKey, isNull);
@@ -233,9 +223,7 @@ void main() {
         const defaultMessage = 'Could not perform action';
 
         test('w/o displayMessageKey', () {
-          final exception = RequestFunctions.getException(
-            statusCode: 405,
-          );
+          final exception = RequestFunctions.getException(statusCode: 405);
           expect(exception.code, defaultCode);
           expect(exception.message, defaultMessage);
           expect(exception.displayMessageKey, isNull);
@@ -256,9 +244,7 @@ void main() {
         const defaultMessage = 'Could not perform action';
 
         test('w/o displayMessageKey', () {
-          final exception = RequestFunctions.getException(
-            statusCode: 406,
-          );
+          final exception = RequestFunctions.getException(statusCode: 406);
           expect(exception.code, defaultCode);
           expect(exception.message, defaultMessage);
           expect(exception.displayMessageKey, isNull);
@@ -279,9 +265,7 @@ void main() {
         const defaultMessage = 'Request has timed out';
 
         test('w/o displayMessageKey', () {
-          final exception = RequestFunctions.getException(
-            statusCode: 408,
-          );
+          final exception = RequestFunctions.getException(statusCode: 408);
           expect(exception.code, defaultCode);
           expect(exception.message, defaultMessage);
           expect(exception.displayMessageKey, isNull);
@@ -303,9 +287,7 @@ void main() {
             'Could not process due to possible semantic errors';
 
         test('w/o displayMessageKey', () {
-          final exception = RequestFunctions.getException(
-            statusCode: 422,
-          );
+          final exception = RequestFunctions.getException(statusCode: 422);
           expect(exception.code, defaultCode);
           expect(exception.message, defaultMessage);
           expect(exception.displayMessageKey, isNull);
@@ -326,9 +308,7 @@ void main() {
         const defaultMessage = 'Security Rejections';
 
         test('w/o displayMessageKey', () {
-          final exception = RequestFunctions.getException(
-            statusCode: 428,
-          );
+          final exception = RequestFunctions.getException(statusCode: 428);
           expect(exception.code, defaultCode);
           expect(exception.message, defaultMessage);
           expect(exception.displayMessageKey, isNull);
@@ -349,9 +329,7 @@ void main() {
         const defaultMessage = 'Too many requests';
 
         test('w/o displayMessageKey', () {
-          final exception = RequestFunctions.getException(
-            statusCode: 429,
-          );
+          final exception = RequestFunctions.getException(statusCode: 429);
           expect(exception.code, defaultCode);
           expect(exception.message, defaultMessage);
           expect(exception.displayMessageKey, isNull);
@@ -372,9 +350,7 @@ void main() {
         const defaultMessage = 'Server has encountered issue';
 
         test('w/o displayMessageKey', () {
-          final exception = RequestFunctions.getException(
-            statusCode: 500,
-          );
+          final exception = RequestFunctions.getException(statusCode: 500);
           expect(exception.code, defaultCode);
           expect(exception.message, defaultMessage);
           expect(exception.displayMessageKey, isNull);
@@ -395,9 +371,7 @@ void main() {
         const defaultMessage = 'Server received invalid response';
 
         test('w/o displayMessageKey', () {
-          final exception = RequestFunctions.getException(
-            statusCode: 502,
-          );
+          final exception = RequestFunctions.getException(statusCode: 502);
           expect(exception.code, defaultCode);
           expect(exception.message, defaultMessage);
           expect(exception.displayMessageKey, isNull);
@@ -418,9 +392,7 @@ void main() {
         const defaultMessage = 'Server is not available';
 
         test('w/o displayMessageKey', () {
-          final exception = RequestFunctions.getException(
-            statusCode: 503,
-          );
+          final exception = RequestFunctions.getException(statusCode: 503);
           expect(exception.code, defaultCode);
           expect(exception.message, defaultMessage);
           expect(exception.displayMessageKey, isNull);
@@ -441,9 +413,7 @@ void main() {
         const defaultMessage = 'Server has timed out';
 
         test('w/o displayMessageKey', () {
-          final exception = RequestFunctions.getException(
-            statusCode: 504,
-          );
+          final exception = RequestFunctions.getException(statusCode: 504);
           expect(exception.code, defaultCode);
           expect(exception.message, defaultMessage);
           expect(exception.displayMessageKey, isNull);
