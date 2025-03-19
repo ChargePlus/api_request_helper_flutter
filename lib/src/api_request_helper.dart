@@ -43,6 +43,26 @@ class ApiRequestHelper {
     return hashIds.encode(timestamp);
   }
 
+  /// Helper method to create headers
+  Map<String, String> _createHeaders({
+    required PackageInfo packageInfo,
+    String? userToken,
+    ContentType contentType = ContentType.json,
+  }) {
+    final headers = {
+      'Content-Type': contentType.value,
+      'x-api-token': xApiToken,
+      'x-api-key': xApiKey,
+      'build-number': '${packageInfo.version}+${packageInfo.buildNumber}',
+    };
+
+    if (userToken != null) {
+      headers['Authorization'] = userToken;
+    }
+
+    return headers;
+  }
+
   /// Calls GET api which will emit [Future] Map<String, dynamic>
   ///
   /// Throws a [ServiceException] if response status code is not 200
@@ -55,33 +75,19 @@ class ApiRequestHelper {
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
     final packageInfo = await PackageInfo.fromPlatform();
-
-    String responseBody;
-    num statusCode;
-    final headers = {
-      'Content-Type': contentType.value,
-      'x-api-token': xApiToken,
-      'x-api-key': xApiKey,
-      'build-number': '${packageInfo.version}+${packageInfo.buildNumber}',
-    };
-
-    if (userToken != null) {
-      headers.addAll({'Authorization': userToken});
-    }
+    final headers = _createHeaders(
+      packageInfo: packageInfo,
+      userToken: userToken,
+      contentType: contentType,
+    );
 
     final response = await http
-        .get(
-          uri,
-          headers: isChargeplus || kDebugMode ? headers : null,
-        )
+        .get(uri, headers: isChargeplus || kDebugMode ? headers : null)
         .timeout(timeout);
 
-    responseBody = response.body;
-    statusCode = response.statusCode;
-
     return RequestFunctions.getResponse(
-      responseBody: responseBody,
-      statusCode: statusCode,
+      responseBody: response.body,
+      statusCode: response.statusCode,
       isResult: isResult,
       uri: uri,
       statusController: _controller,
@@ -102,19 +108,11 @@ class ApiRequestHelper {
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
     final packageInfo = await PackageInfo.fromPlatform();
-
-    String responseBody;
-    num statusCode;
-    final headers = {
-      'Content-Type': contentType.value,
-      'x-api-token': xApiToken,
-      'x-api-key': xApiKey,
-      'build-number': '${packageInfo.version}+${packageInfo.buildNumber}',
-    };
-
-    if (userToken != null) {
-      headers.addAll({'Authorization': userToken});
-    }
+    final headers = _createHeaders(
+      packageInfo: packageInfo,
+      userToken: userToken,
+      contentType: contentType,
+    );
 
     if (contentType == ContentType.formData) {
       final request = await RequestFunctions.getMultipartRequest(
@@ -126,9 +124,14 @@ class ApiRequestHelper {
       );
 
       final response = await request.send().timeout(timeout);
-
-      statusCode = response.statusCode;
-      responseBody = await response.stream.bytesToString();
+      return RequestFunctions.getResponse(
+        responseBody: await response.stream.bytesToString(),
+        statusCode: response.statusCode,
+        isResult: isResult,
+        uri: uri,
+        data: data,
+        statusController: _controller,
+      );
     } else {
       final response = await http
           .post(
@@ -138,18 +141,15 @@ class ApiRequestHelper {
           )
           .timeout(timeout);
 
-      statusCode = response.statusCode;
-      responseBody = response.body;
+      return RequestFunctions.getResponse(
+        responseBody: response.body,
+        statusCode: response.statusCode,
+        isResult: isResult,
+        uri: uri,
+        data: data,
+        statusController: _controller,
+      );
     }
-
-    return RequestFunctions.getResponse(
-      responseBody: responseBody,
-      statusCode: statusCode,
-      isResult: isResult,
-      uri: uri,
-      data: data,
-      statusController: _controller,
-    );
   }
 
   /// Calls PATCH api which will emit [Future] dynamic
@@ -166,19 +166,11 @@ class ApiRequestHelper {
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
     final packageInfo = await PackageInfo.fromPlatform();
-
-    String responseBody;
-    num statusCode;
-    final headers = {
-      'Content-Type': contentType.value,
-      'x-api-token': xApiToken,
-      'x-api-key': xApiKey,
-      'build-number': '${packageInfo.version}+${packageInfo.buildNumber}',
-    };
-
-    if (userToken != null) {
-      headers.addAll({'Authorization': userToken});
-    }
+    final headers = _createHeaders(
+      packageInfo: packageInfo,
+      userToken: userToken,
+      contentType: contentType,
+    );
 
     if (contentType == ContentType.formData) {
       final request = await RequestFunctions.getMultipartRequest(
@@ -191,8 +183,14 @@ class ApiRequestHelper {
 
       final response = await request.send().timeout(timeout);
 
-      statusCode = response.statusCode;
-      responseBody = await response.stream.bytesToString();
+      return RequestFunctions.getResponse(
+        responseBody: await response.stream.bytesToString(),
+        statusCode: response.statusCode,
+        isResult: isResult,
+        uri: uri,
+        data: data,
+        statusController: _controller,
+      );
     } else {
       final response = await http
           .patch(
@@ -202,18 +200,15 @@ class ApiRequestHelper {
           )
           .timeout(timeout);
 
-      statusCode = response.statusCode;
-      responseBody = response.body;
+      return RequestFunctions.getResponse(
+        responseBody: response.body,
+        statusCode: response.statusCode,
+        isResult: isResult,
+        uri: uri,
+        data: data,
+        statusController: _controller,
+      );
     }
-
-    return RequestFunctions.getResponse(
-      responseBody: responseBody,
-      statusCode: statusCode,
-      isResult: isResult,
-      uri: uri,
-      data: data,
-      statusController: _controller,
-    );
   }
 
   /// Calls PUT api which will emit [Future] dynamic
@@ -230,19 +225,11 @@ class ApiRequestHelper {
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
     final packageInfo = await PackageInfo.fromPlatform();
-
-    String responseBody;
-    num statusCode;
-    final headers = {
-      'Content-Type': contentType.value,
-      'x-api-token': xApiToken,
-      'x-api-key': xApiKey,
-      'build-number': '${packageInfo.version}+${packageInfo.buildNumber}',
-    };
-
-    if (userToken != null) {
-      headers.addAll({'Authorization': userToken});
-    }
+    final headers = _createHeaders(
+      packageInfo: packageInfo,
+      userToken: userToken,
+      contentType: contentType,
+    );
 
     if (contentType == ContentType.formData) {
       final request = await RequestFunctions.getMultipartRequest(
@@ -255,8 +242,14 @@ class ApiRequestHelper {
 
       final response = await request.send().timeout(timeout);
 
-      statusCode = response.statusCode;
-      responseBody = await response.stream.bytesToString();
+      return RequestFunctions.getResponse(
+        responseBody: await response.stream.bytesToString(),
+        statusCode: response.statusCode,
+        isResult: isResult,
+        uri: uri,
+        data: data,
+        statusController: _controller,
+      );
     } else {
       final response = await http
           .put(
@@ -266,18 +259,15 @@ class ApiRequestHelper {
           )
           .timeout(timeout);
 
-      statusCode = response.statusCode;
-      responseBody = response.body;
+      return RequestFunctions.getResponse(
+        responseBody: response.body,
+        statusCode: response.statusCode,
+        isResult: isResult,
+        uri: uri,
+        data: data,
+        statusController: _controller,
+      );
     }
-
-    return RequestFunctions.getResponse(
-      responseBody: responseBody,
-      statusCode: statusCode,
-      isResult: isResult,
-      uri: uri,
-      data: data,
-      statusController: _controller,
-    );
   }
 
   /// Calls DELETE api which will emit [Future] dynamic
@@ -293,19 +283,11 @@ class ApiRequestHelper {
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
     final packageInfo = await PackageInfo.fromPlatform();
-
-    String responseBody;
-    num statusCode;
-    final headers = {
-      'Content-Type': contentType.value,
-      'x-api-token': xApiToken,
-      'x-api-key': xApiKey,
-      'build-number': '${packageInfo.version}+${packageInfo.buildNumber}',
-    };
-
-    if (userToken != null) {
-      headers.addAll({'Authorization': userToken});
-    }
+    final headers = _createHeaders(
+      packageInfo: packageInfo,
+      userToken: userToken,
+      contentType: contentType,
+    );
 
     final response = await http
         .delete(
@@ -315,12 +297,9 @@ class ApiRequestHelper {
         )
         .timeout(timeout);
 
-    statusCode = response.statusCode;
-    responseBody = response.body;
-
     return RequestFunctions.getResponse(
-      responseBody: responseBody,
-      statusCode: statusCode,
+      responseBody: response.body,
+      statusCode: response.statusCode,
       isResult: isResult,
       uri: uri,
       data: data ?? {},
@@ -331,17 +310,10 @@ class ApiRequestHelper {
   /// Calls GET api which will emit [Future] of Uint8List
   ///
   /// Throws a ClientException if an error occurs
-  Future<Uint8List> readBytes({
-    required Uri uri,
-    String? userToken,
-  }) async {
+  Future<Uint8List> readBytes({required Uri uri, String? userToken}) async {
     final byteFile = await http.readBytes(
       uri,
-      headers: userToken != null
-          ? {
-              'Authorization': userToken,
-            }
-          : null,
+      headers: userToken != null ? {'Authorization': userToken} : null,
     );
     return byteFile;
   }

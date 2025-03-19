@@ -46,6 +46,26 @@ class RequestFunctions {
     return request;
   }
 
+  /// Logs the response details
+  static void _logResponseDetails({
+    required num statusCode,
+    required Uri uri,
+    required Map<String, dynamic> mappedResponse,
+    required Map<String, dynamic> data,
+  }) {
+    final emoji = switch (statusCode) {
+      >= 200 && < 300 => '✅',
+      >= 300 && < 400 => '🟠',
+      _ => '❌',
+    };
+
+    log('$emoji $statusCode $emoji -- $uri, data: $data');
+    log(
+      '$emoji body $emoji -- json: $mappedResponse, statusCode: '
+      '${mappedResponse['status']}',
+    );
+  }
+
   /// Handles the HTTP response and emits the status code to the status
   /// controller
   ///
@@ -79,17 +99,13 @@ class RequestFunctions {
     /// Emit the status code to the status controller
     statusController.add(statusCode);
 
-    /// Log the status code and the URI
-    final emoji = switch (statusCode) {
-      != null && >= 200 && < 300 => '✅', // Log a success emoji
-      != null && >= 300 && < 400 => '🟠', // Log a warning emoji
-      _ => '❌' // Log an error emoji
-    };
-    log('$emoji $statusCode $emoji -- $uri, data: $data');
-
-    /// Log the response body and the status code in the response body
-    log('$emoji body $emoji -- json: $mappedResponse, statusCode: '
-        '${mappedResponse['status']}');
+    /// Log the response details
+    _logResponseDetails(
+      statusCode: statusCode,
+      uri: uri,
+      mappedResponse: mappedResponse,
+      data: data,
+    );
 
     /// Switch on the status code and return the appropriate response
     switch (statusCode) {
@@ -110,9 +126,10 @@ class RequestFunctions {
         final result = mappedResponse['result'] as Map<String, dynamic>;
         final displayMessageKey = result['display_message_key'] as String?;
 
-        final errorMessage = mappedResponse.containsKey('message')
-            ? mappedResponse['message'] as String?
-            : mappedResponse.containsKey('msg')
+        final errorMessage =
+            mappedResponse.containsKey('message')
+                ? mappedResponse['message'] as String?
+                : mappedResponse.containsKey('msg')
                 ? mappedResponse['msg'] as String?
                 : null;
 
