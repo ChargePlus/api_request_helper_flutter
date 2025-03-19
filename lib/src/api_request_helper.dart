@@ -63,7 +63,7 @@ class ApiRequestHelper {
     return headers;
   }
 
-  /// Calls GET api which will emit [Future] Map<String, dynamic>
+  /// Calls GET api which will emit [Future] [Map<String, dynamic>]
   ///
   /// Throws a [ServiceException] if response status code is not 200
   Future<dynamic> get({
