@@ -83,13 +83,15 @@ class RequestFunctions {
     final emoji = switch (statusCode) {
       != null && >= 200 && < 300 => '✅', // Log a success emoji
       != null && >= 300 && < 400 => '🟠', // Log a warning emoji
-      _ => '❌' // Log an error emoji
+      _ => '❌', // Log an error emoji
     };
     log('$emoji $statusCode $emoji -- $uri, data: $data');
 
     /// Log the response body and the status code in the response body
-    log('$emoji body $emoji -- json: $mappedResponse, statusCode: '
-        '${mappedResponse['status']}');
+    log(
+      '$emoji body $emoji -- json: $mappedResponse, statusCode: '
+      '${mappedResponse['status']}',
+    );
 
     /// Switch on the status code and return the appropriate response
     switch (statusCode) {
@@ -110,9 +112,10 @@ class RequestFunctions {
         final result = mappedResponse['result'] as Map<String, dynamic>;
         final displayMessageKey = result['display_message_key'] as String?;
 
-        final errorMessage = mappedResponse.containsKey('message')
-            ? mappedResponse['message'] as String?
-            : mappedResponse.containsKey('msg')
+        final errorMessage =
+            mappedResponse.containsKey('message')
+                ? mappedResponse['message'] as String?
+                : mappedResponse.containsKey('msg')
                 ? mappedResponse['msg'] as String?
                 : null;
 
