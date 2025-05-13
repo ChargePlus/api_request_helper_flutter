@@ -40,3 +40,7 @@ app.*.symbols
 app.*.map.json
 
 coverage/
+
+# FVM Version Cache
+.fvm/
+.fvmrc

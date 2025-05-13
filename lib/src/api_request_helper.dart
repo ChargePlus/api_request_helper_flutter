@@ -195,7 +195,7 @@ class ApiRequestHelper {
       final response = await http
           .patch(
             uri,
-            headers: isChargeplus ? headers : null,
+            headers: isChargeplus || kDebugMode ? headers : null,
             body: jsonEncode(data),
           )
           .timeout(timeout);
@@ -254,7 +254,7 @@ class ApiRequestHelper {
       final response = await http
           .put(
             uri,
-            headers: isChargeplus ? headers : null,
+            headers: isChargeplus || kDebugMode ? headers : null,
             body: jsonEncode(data),
           )
           .timeout(timeout);
