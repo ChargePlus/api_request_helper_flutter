@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:api_request_helper_flutter/api_request_helper_flutter.dart';
 import 'package:exceptions_flutter/exceptions_flutter.dart';
@@ -53,7 +54,8 @@ class ApiRequestHelper {
       'Content-Type': contentType.value,
       'x-api-token': xApiToken,
       'x-api-key': xApiKey,
-      'build-number': '${packageInfo.version}+${packageInfo.buildNumber}',
+      'build-number': packageInfo.buildNumber,
+      'platform': Platform.operatingSystem,
     };
 
     if (userToken != null) {
