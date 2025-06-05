@@ -55,7 +55,7 @@ class ApiRequestHelper {
       'x-api-token': xApiToken,
       'x-api-key': xApiKey,
       'build-number': packageInfo.buildNumber,
-      'platform': Platform.operatingSystem,
+      'platform': kIsWeb ? 'web' : Platform.operatingSystem,
     };
 
     if (userToken != null) {
