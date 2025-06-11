@@ -117,6 +117,9 @@ class ApiRequestHelper {
     );
 
     if (contentType == ContentType.formData) {
+      // Remove Content-Type if it was set earlier
+      headers.remove('Content-Type');
+
       final request = await RequestFunctions.getMultipartRequest(
         uri: uri,
         data: data,
