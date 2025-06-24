@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hashids2/hashids2.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:retry/retry.dart';
 
 /// {@template api_request_helper_flutter}
 /// Api Request Helper Flutter is a repository that handles http calls such as
@@ -74,6 +75,7 @@ class ApiRequestHelper {
     bool isResult = true,
     ContentType contentType = ContentType.json,
     Duration timeout = const Duration(minutes: 1),
+    int maxAttempts = 3,
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
     final packageInfo = await PackageInfo.fromPlatform();
@@ -83,9 +85,14 @@ class ApiRequestHelper {
       contentType: contentType,
     );
 
-    final response = await http
-        .get(uri, headers: isChargeplus || kDebugMode ? headers : null)
-        .timeout(timeout);
+    final retryOptions = RetryOptions(maxAttempts: maxAttempts);
+
+    final response = await retryOptions.retry(
+      () => http
+          .get(uri, headers: isChargeplus || kDebugMode ? headers : null)
+          .timeout(timeout),
+      retryIf: (e) => e is SocketException || e is TimeoutException,
+    );
 
     return RequestFunctions.getResponse(
       responseBody: response.body,
