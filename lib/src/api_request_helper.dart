@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:api_request_helper_flutter/api_request_helper_flutter.dart';
@@ -91,7 +92,9 @@ class ApiRequestHelper {
       () => http
           .get(uri, headers: isChargeplus || kDebugMode ? headers : null)
           .timeout(timeout),
-      retryIf: (error) => error is SocketException || error is TimeoutException,
+      retryIf: (exception) =>
+          exception is SocketException || exception is TimeoutException,
+      onRetry: (_) => log('Retry request -- $uri'),
     );
 
     return RequestFunctions.getResponse(
