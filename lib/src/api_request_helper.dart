@@ -91,7 +91,7 @@ class ApiRequestHelper {
       () => http
           .get(uri, headers: isChargeplus || kDebugMode ? headers : null)
           .timeout(timeout),
-      retryIf: (e) => e is SocketException || e is TimeoutException,
+      retryIf: (error) => error is SocketException || error is TimeoutException,
     );
 
     return RequestFunctions.getResponse(
