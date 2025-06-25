@@ -94,7 +94,7 @@ class ApiRequestHelper {
           .timeout(timeout),
       retryIf: (exception) =>
           exception is SocketException || exception is TimeoutException,
-      onRetry: (_) => log('Retry request -- $uri'),
+      onRetry: (context) => log('Attempt ${context.attemptNumber} for request -- $uri'),
     );
 
     return RequestFunctions.getResponse(
