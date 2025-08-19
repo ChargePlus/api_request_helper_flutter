@@ -5,7 +5,7 @@ version: 1.7.12+56
 publish_to: none
 
 environment:
-  sdk: ">=3.8.0 <4.0.0"
+  sdk: ">=3.9.0 <4.0.0"
 
 dependencies:
   exceptions_flutter:
@@ -14,12 +14,12 @@ dependencies:
   flutter:
     sdk: flutter
   hashids2: ^2.0.0
-  http: ^1.4.0
-  package_info_plus: ^8.3.0
+  http: ^1.5.0
+  package_info_plus: ^8.3.1
   retry: ^3.1.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   mocktail: ^1.0.4
-  very_good_analysis: ^7.0.0
+  very_good_analysis: ^9.0.0
