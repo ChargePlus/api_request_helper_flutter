@@ -1,0 +1,13 @@
+name: Copilot setup steps
+on:
+  workflow_call:
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Dart SDK
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable   # or a specific version like "3.9.0"
+      - name: Verify Dart
+        run: dart --version
