@@ -76,7 +76,7 @@ class RequestFunctions {
   /// - [statusCode] The status code of the HTTP response
   /// - [uri] The requested URI
   /// - [statusController] The status controller to emit the status code
-  /// - [isResult] Whether to return the 'result' field from the response body
+  /// - [isResult] Whether to return the 'data' field from the response body
   static dynamic getResponse({
     required String responseBody,
     required num statusCode,
@@ -115,7 +115,7 @@ class RequestFunctions {
       case 204:
       case 214:
         if (isResult) {
-          return mappedResponse['result'];
+          return mappedResponse['data'];
         } else {
           return mappedResponse;
         }
@@ -124,15 +124,14 @@ class RequestFunctions {
         /// Throw a ServiceException based on the status code
         /// and the 'message' field in the response body
         /// and the 'displayMessageKey' field in the response body (if any)
-        final result = mappedResponse['result'] as Map<String, dynamic>;
+        final result = mappedResponse['data'] as Map<String, dynamic>;
         final displayMessageKey = result['display_message_key'] as String?;
 
-        final errorMessage =
-            mappedResponse.containsKey('message')
-                ? mappedResponse['message'] as String?
-                : mappedResponse.containsKey('msg')
-                ? mappedResponse['msg'] as String?
-                : null;
+        final errorMessage = mappedResponse.containsKey('message')
+            ? mappedResponse['message'] as String?
+            : mappedResponse.containsKey('msg')
+            ? mappedResponse['msg'] as String?
+            : null;
 
         final exception = getException(
           statusCode: effectiveStatusCode,

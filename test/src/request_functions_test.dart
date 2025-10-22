@@ -43,7 +43,7 @@ void main() {
             statusController: StreamController<num>(),
           );
 
-          expect(result, equals(responseJson['result']));
+          expect(result, equals(responseJson['data']));
         });
 
         test('returns response body', () {
