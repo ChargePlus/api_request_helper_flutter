@@ -89,26 +89,27 @@ class RequestFunctions {
     final mappedResponse = json.decode(responseBody) as Map<String, dynamic>;
 
     /// If the status code is 200 but the 'status' field in the response body
-    /// is not 200, update the status code
+    /// is not 200, use the body's status as the effective status code
+    var effectiveStatusCode = statusCode;
     if (statusCode == 200 &&
         mappedResponse.containsKey('status') &&
         mappedResponse['status'] != 200) {
-      statusCode = num.parse(mappedResponse['status'].toString());
+      effectiveStatusCode = num.parse(mappedResponse['status'].toString());
     }
 
     /// Emit the status code to the status controller
-    statusController.add(statusCode);
+    statusController.add(effectiveStatusCode);
 
     /// Log the response details
     _logResponseDetails(
-      statusCode: statusCode,
+      statusCode: effectiveStatusCode,
       uri: uri,
       mappedResponse: mappedResponse,
       data: data,
     );
 
     /// Switch on the status code and return the appropriate response
-    switch (statusCode) {
+    switch (effectiveStatusCode) {
       case 200:
       case 203:
       case 204:
@@ -134,7 +135,7 @@ class RequestFunctions {
                 : null;
 
         final exception = getException(
-          statusCode: statusCode,
+          statusCode: effectiveStatusCode,
           errorMessage: errorMessage,
           displayMessageKey: displayMessageKey,
           stackTrace: StackTrace.current,
