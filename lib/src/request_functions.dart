@@ -3,10 +3,37 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:exceptions_flutter/exceptions_flutter.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 /// Class to handle HTTP response and exceptions
 class RequestFunctions {
+  /// Request-body keys whose values must never be written to logs.
+  ///
+  /// Matched case-insensitively, so this also covers variants such as
+  /// `cardNumber`/`card_number` and `cardCvv`.
+  static const Set<String> _sensitiveKeys = {
+    'password',
+    'cvv',
+    'number',
+  };
+
+  /// Placeholder substituted for any [_sensitiveKeys] value before logging.
+  static const String _redacted = '***';
+
+  /// Returns a copy of [data] with the values of any sensitive keys masked,
+  /// so credentials and card data are never rendered in log output.
+  ///
+  /// The original map is left untouched.
+  @visibleForTesting
+  static Map<String, dynamic> redactSensitive(Map<String, dynamic> data) {
+    return data.map((key, value) {
+      final isSensitive = _sensitiveKeys.any(
+        (sensitive) => key.toLowerCase().contains(sensitive),
+      );
+      return MapEntry(key, isSensitive ? _redacted : value);
+    });
+  }
   /// Uploads a multipart form to the specified URI.
   ///
   /// Parameters:
@@ -53,13 +80,19 @@ class RequestFunctions {
     required Map<String, dynamic> mappedResponse,
     required Map<String, dynamic> data,
   }) {
+    // `dart:developer` `log()` still writes to the native system log
+    // (`logcat` / OSLog) in profile and release builds. Request bodies and
+    // responses carry credentials, card data and auth tokens, so skip logging
+    // entirely outside debug to avoid leaking them on production devices.
+    if (!kDebugMode) return;
+
     final emoji = switch (statusCode) {
       >= 200 && < 300 => '✅',
       >= 300 && < 400 => '🟠',
       _ => '❌',
     };
 
-    log('$emoji $statusCode $emoji -- $uri, data: $data');
+    log('$emoji $statusCode $emoji -- $uri, data: ${redactSensitive(data)}');
     log(
       '$emoji body $emoji -- json: $mappedResponse, statusCode: '
       '${mappedResponse['status']}',

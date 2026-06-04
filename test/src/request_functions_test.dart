@@ -11,6 +11,48 @@ void main() {
       // Tests go here
     });
 
+    group('redactSensitive', () {
+      test('masks password, cvv and number values', () {
+        final redacted = RequestFunctions.redactSensitive({
+          'username': 'jane',
+          'password': 'hunter2',
+          'cvv': '123',
+          'number': '4111111111111111',
+        });
+
+        expect(redacted['username'], 'jane');
+        expect(redacted['password'], '***');
+        expect(redacted['cvv'], '***');
+        expect(redacted['number'], '***');
+      });
+
+      test('matches sensitive keys case-insensitively and as substrings', () {
+        final redacted = RequestFunctions.redactSensitive({
+          'cardNumber': '4111111111111111',
+          'cardCvv': '123',
+          'Password': 'secret',
+        });
+
+        expect(redacted['cardNumber'], '***');
+        expect(redacted['cardCvv'], '***');
+        expect(redacted['Password'], '***');
+      });
+
+      test('leaves non-sensitive values untouched', () {
+        final original = {'email': 'a@b.com', 'amount': 500};
+        final redacted = RequestFunctions.redactSensitive(original);
+
+        expect(redacted, equals(original));
+      });
+
+      test('does not mutate the original map', () {
+        final original = {'password': 'hunter2'};
+        RequestFunctions.redactSensitive(original);
+
+        expect(original['password'], 'hunter2');
+      });
+    });
+
     group('getResponse', () {
       final mockUri = Uri.parse('https://example.com/api');
 
