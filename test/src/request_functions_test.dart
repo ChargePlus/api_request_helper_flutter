@@ -15,7 +15,7 @@ void main() {
       final mockUri = Uri.parse('https://example.com/api');
 
       group('status code 200 with status 200 in response', () {
-        const responseBody = '{"status":200,"result":{"data":"success"}}';
+        const responseBody = '{"status":200,"data":{"value":"success"}}';
         const statusCode = 200;
         final responseJson = json.decode(responseBody) as Map<String, dynamic>;
 
@@ -67,7 +67,7 @@ void main() {
 
           try {
             RequestFunctions.getResponse(
-              responseBody: '{"status":300,"result":{"data":"success"}}',
+              responseBody: '{"status":300,"data":{"value":"success"}}',
               statusCode: 200,
               uri: mockUri,
               statusController: statusController,
@@ -90,7 +90,7 @@ void main() {
           try {
             RequestFunctions.getResponse(
               responseBody:
-                  '''{"status":400,"result":{"display_message_key":"auth-sendOTPError"}}''',
+                  '''{"status":400,"data":{"display_message_key":"auth-sendOTPError"}}''',
               statusCode: 200,
               uri: mockUri,
               statusController: statusController,
