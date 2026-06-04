@@ -38,6 +38,27 @@ void main() {
         expect(redacted['Password'], '***');
       });
 
+      test('masks card expiry variants', () {
+        final redacted = RequestFunctions.redactSensitive({
+          'expiration': '12/29',
+          'cardExpiry': '12/29',
+        });
+
+        expect(redacted['expiration'], '***');
+        expect(redacted['cardExpiry'], '***');
+      });
+
+      test('only redacts top-level keys (nested maps are not traversed)', () {
+        // Documents the shallow contract: the kDebugMode guard in
+        // _logResponseDetails — not this helper — is what protects nested
+        // secrets, since this package only sends flat request bodies.
+        final redacted = RequestFunctions.redactSensitive({
+          'card': {'number': '4111111111111111', 'cvv': '123'},
+        });
+
+        expect(redacted['card'], {'number': '4111111111111111', 'cvv': '123'});
+      });
+
       test('leaves non-sensitive values untouched', () {
         final original = {'email': 'a@b.com', 'amount': 500};
         final redacted = RequestFunctions.redactSensitive(original);

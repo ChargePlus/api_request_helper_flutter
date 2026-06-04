@@ -10,12 +10,15 @@ import 'package:http/http.dart' as http;
 class RequestFunctions {
   /// Request-body keys whose values must never be written to logs.
   ///
-  /// Matched case-insensitively, so this also covers variants such as
-  /// `cardNumber`/`card_number` and `cardCvv`.
+  /// Matched case-insensitively as substrings, so each entry also covers
+  /// variants such as `cardNumber`/`card_number`, `cardCvv` and
+  /// `expiration`/`expiry`. Note this only inspects top-level keys — see
+  /// [redactSensitive].
   static const Set<String> _sensitiveKeys = {
     'password',
     'cvv',
     'number',
+    'expir',
   };
 
   /// Placeholder substituted for any [_sensitiveKeys] value before logging.
@@ -24,7 +27,11 @@ class RequestFunctions {
   /// Returns a copy of [data] with the values of any sensitive keys masked,
   /// so credentials and card data are never rendered in log output.
   ///
-  /// The original map is left untouched.
+  /// Only top-level keys are inspected; values that are themselves maps are
+  /// not traversed. This is sufficient for the flat request bodies this
+  /// package sends, and is backed by the [kDebugMode] guard in
+  /// `_logResponseDetails` so unredacted data never reaches a release build
+  /// regardless. The original map is left untouched.
   @visibleForTesting
   static Map<String, dynamic> redactSensitive(Map<String, dynamic> data) {
     return data.map((key, value) {
@@ -34,6 +41,7 @@ class RequestFunctions {
       return MapEntry(key, isSensitive ? _redacted : value);
     });
   }
+
   /// Uploads a multipart form to the specified URI.
   ///
   /// Parameters:
