@@ -89,7 +89,12 @@ class ApiRequestHelper {
 
     final response = await retryOptions.retry(
       () => http
-          .get(uri, headers: isChargeplus || kDebugMode ? headers : null)
+          .get(
+            uri,
+            headers: isChargeplus || kDebugMode || kProfileMode
+                ? headers
+                : null,
+          )
           .timeout(timeout),
       retryIf: (exception) =>
           exception is SocketException || exception is TimeoutException,
@@ -149,7 +154,9 @@ class ApiRequestHelper {
       final response = await http
           .post(
             uri,
-            headers: isChargeplus || kDebugMode ? headers : null,
+            headers: isChargeplus || kDebugMode || kProfileMode
+                ? headers
+                : null,
             body: jsonEncode(data),
           )
           .timeout(timeout);
@@ -190,7 +197,7 @@ class ApiRequestHelper {
         uri: uri,
         data: data,
         method: 'PATCH',
-        headers: isChargeplus || kDebugMode ? headers : {},
+        headers: isChargeplus || kDebugMode || kProfileMode ? headers : {},
         fileData: fileData,
       );
 
@@ -208,7 +215,9 @@ class ApiRequestHelper {
       final response = await http
           .patch(
             uri,
-            headers: isChargeplus || kDebugMode ? headers : null,
+            headers: isChargeplus || kDebugMode || kProfileMode
+                ? headers
+                : null,
             body: jsonEncode(data),
           )
           .timeout(timeout);
@@ -249,7 +258,7 @@ class ApiRequestHelper {
         uri: uri,
         data: data,
         method: 'PUT',
-        headers: isChargeplus || kDebugMode ? headers : {},
+        headers: isChargeplus || kDebugMode || kProfileMode ? headers : {},
         fileData: fileData,
       );
 
@@ -267,7 +276,9 @@ class ApiRequestHelper {
       final response = await http
           .put(
             uri,
-            headers: isChargeplus || kDebugMode ? headers : null,
+            headers: isChargeplus || kDebugMode || kProfileMode
+                ? headers
+                : null,
             body: jsonEncode(data),
           )
           .timeout(timeout);
@@ -305,7 +316,7 @@ class ApiRequestHelper {
     final response = await http
         .delete(
           uri,
-          headers: isChargeplus || kDebugMode ? headers : null,
+          headers: isChargeplus || kDebugMode || kProfileMode ? headers : null,
           body: jsonEncode(data),
         )
         .timeout(timeout);
