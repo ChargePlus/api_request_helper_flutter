@@ -36,6 +36,9 @@ class ApiRequestHelper {
     const encryptionKey = String.fromEnvironment('XAPITOKEN_ENCRYPTION_KEY');
 
     final hashIds = HashIds(
+      // Pass the environment-provided salt explicitly. It can equal the
+      // default empty string at compile time when the value is unset, which
+      // triggers avoid_redundant_argument_values, but it stays configurable.
       // ignore: avoid_redundant_argument_values
       salt: encryptionKey,
       minHashLength: 16,
