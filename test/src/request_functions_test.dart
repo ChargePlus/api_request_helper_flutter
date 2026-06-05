@@ -48,15 +48,60 @@ void main() {
         expect(redacted['cardExpiry'], '***');
       });
 
-      test('only redacts top-level keys (nested maps are not traversed)', () {
-        // Documents the shallow contract: the kDebugMode guard in
-        // _logResponseDetails — not this helper — is what protects nested
-        // secrets, since this package only sends flat request bodies.
+      test('masks auth tokens, secrets and api keys', () {
         final redacted = RequestFunctions.redactSensitive({
-          'card': {'number': '4111111111111111', 'cvv': '123'},
+          'accessToken': 'eyJabc',
+          'refreshToken': 'eyJxyz',
+          'clientSecret': 'shh',
+          'api_key': 'k-123',
+          'Authorization': 'Bearer eyJ',
         });
 
-        expect(redacted['card'], {'number': '4111111111111111', 'cvv': '123'});
+        expect(redacted['accessToken'], '***');
+        expect(redacted['refreshToken'], '***');
+        expect(redacted['clientSecret'], '***');
+        expect(redacted['api_key'], '***');
+        expect(redacted['Authorization'], '***');
+      });
+
+      test('does not over-redact unrelated *number fields', () {
+        final redacted = RequestFunctions.redactSensitive({
+          'phoneNumber': '5551234',
+          'accountNumber': '00012345',
+        });
+
+        expect(redacted['phoneNumber'], '5551234');
+        expect(redacted['accountNumber'], '00012345');
+      });
+
+      test('redacts sensitive keys inside nested maps', () {
+        final redacted = RequestFunctions.redactSensitive({
+          'card': {
+            'number': '4111111111111111',
+            'cvv': '123',
+            'holder': 'Jane',
+          },
+        });
+
+        expect(redacted['card'], {
+          'number': '***',
+          'cvv': '***',
+          'holder': 'Jane',
+        });
+      });
+
+      test('redacts sensitive keys inside lists of maps', () {
+        final redacted = RequestFunctions.redactSensitive({
+          'cards': [
+            {'number': '4111111111111111', 'label': 'primary'},
+            {'number': '5500000000000004', 'label': 'backup'},
+          ],
+        });
+
+        expect(redacted['cards'], [
+          {'number': '***', 'label': 'primary'},
+          {'number': '***', 'label': 'backup'},
+        ]);
       });
 
       test('leaves non-sensitive values untouched', () {
@@ -71,6 +116,15 @@ void main() {
         RequestFunctions.redactSensitive(original);
 
         expect(original['password'], 'hunter2');
+      });
+
+      test('does not mutate nested collections in the original map', () {
+        final original = {
+          'card': {'number': '4111111111111111'},
+        };
+        RequestFunctions.redactSensitive(original);
+
+        expect(original['card'], {'number': '4111111111111111'});
       });
     });
 
