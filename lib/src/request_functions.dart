@@ -3,10 +3,83 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:exceptions_flutter/exceptions_flutter.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 /// Class to handle HTTP response and exceptions
 class RequestFunctions {
+  /// Request and response keys whose values must never be written to logs.
+  ///
+  /// Each entry is matched case-insensitively as a substring of the normalized
+  /// key (letters and digits only, separators stripped), so a single entry
+  /// covers variants such as `cardCvv`, `accessToken`/`refreshToken`,
+  /// `client_secret`, `api_key` and `expiration`/`expiry`. Card numbers are
+  /// matched separately — see [_isSensitiveKey] — so that unrelated fields
+  /// such as `phoneNumber` are not redacted.
+  static const Set<String> _sensitiveKeys = {
+    'password',
+    'cvv',
+    'cvc',
+    'secret',
+    'token',
+    'apikey',
+    'authorization',
+    'expir',
+  };
+
+  /// Placeholder substituted for any sensitive value before logging.
+  static const String _redacted = '***';
+
+  /// Whether [key] names a value that must be redacted before logging.
+  static bool _isSensitiveKey(String key) {
+    final normalized = key.toLowerCase().replaceAll(RegExp('[^a-z0-9]'), '');
+    // Match a standalone `number` or any `*cardNumber*` field, but leave
+    // unrelated fields such as `phoneNumber` or `accountNumber` intact.
+    if (normalized == 'number' || normalized.contains('cardnumber')) {
+      return true;
+    }
+    return _sensitiveKeys.any(normalized.contains);
+  }
+
+  /// Returns a deep copy of [data] with the values of any sensitive keys
+  /// masked, so credentials, card data and auth tokens are never rendered in
+  /// log output.
+  ///
+  /// Nested maps and lists are traversed, so sensitive values are redacted at
+  /// any depth. This is applied to both request bodies and decoded response
+  /// payloads, and is backed by the [kDebugMode] guard in
+  /// `_logResponseDetails` so unredacted data never reaches a release build
+  /// regardless. The original [data] (and any nested collections) is left
+  /// untouched.
+  @visibleForTesting
+  static Map<String, dynamic> redactSensitive(Map<String, dynamic> data) {
+    return data.map(
+      (key, value) => MapEntry(
+        key,
+        _isSensitiveKey(key) ? _redacted : _redactValue(value),
+      ),
+    );
+  }
+
+  /// Recursively redacts sensitive keys inside [value] when it is a map or a
+  /// list, leaving scalar values untouched.
+  static dynamic _redactValue(dynamic value) {
+    if (value is Map<String, dynamic>) {
+      return redactSensitive(value);
+    }
+    if (value is Map) {
+      return redactSensitive(
+        value.map<String, dynamic>(
+          (dynamic key, dynamic v) => MapEntry(key.toString(), v),
+        ),
+      );
+    }
+    if (value is List) {
+      return value.map<dynamic>(_redactValue).toList();
+    }
+    return value;
+  }
+
   /// Uploads a multipart form to the specified URI.
   ///
   /// Parameters:
@@ -53,16 +126,22 @@ class RequestFunctions {
     required Map<String, dynamic> mappedResponse,
     required Map<String, dynamic> data,
   }) {
+    // `dart:developer` `log()` still writes to the native system log
+    // (`logcat` / OSLog) in profile and release builds. Request bodies and
+    // responses carry credentials, card data and auth tokens, so skip logging
+    // entirely outside debug to avoid leaking them on production devices.
+    if (!kDebugMode) return;
+
     final emoji = switch (statusCode) {
       >= 200 && < 300 => '✅',
       >= 300 && < 400 => '🟠',
       _ => '❌',
     };
 
-    log('$emoji $statusCode $emoji -- $uri, data: $data');
+    log('$emoji $statusCode $emoji -- $uri, data: ${redactSensitive(data)}');
     log(
-      '$emoji body $emoji -- json: $mappedResponse, statusCode: '
-      '${mappedResponse['status']}',
+      '$emoji body $emoji -- json: ${redactSensitive(mappedResponse)}, '
+      'statusCode: ${mappedResponse['status']}',
     );
   }
 
