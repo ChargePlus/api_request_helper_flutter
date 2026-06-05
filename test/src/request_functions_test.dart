@@ -11,6 +11,123 @@ void main() {
       // Tests go here
     });
 
+    group('redactSensitive', () {
+      test('masks password, cvv and number values', () {
+        final redacted = RequestFunctions.redactSensitive({
+          'username': 'jane',
+          'password': 'hunter2',
+          'cvv': '123',
+          'number': '4111111111111111',
+        });
+
+        expect(redacted['username'], 'jane');
+        expect(redacted['password'], '***');
+        expect(redacted['cvv'], '***');
+        expect(redacted['number'], '***');
+      });
+
+      test('matches sensitive keys case-insensitively and as substrings', () {
+        final redacted = RequestFunctions.redactSensitive({
+          'cardNumber': '4111111111111111',
+          'cardCvv': '123',
+          'Password': 'secret',
+        });
+
+        expect(redacted['cardNumber'], '***');
+        expect(redacted['cardCvv'], '***');
+        expect(redacted['Password'], '***');
+      });
+
+      test('masks card expiry variants', () {
+        final redacted = RequestFunctions.redactSensitive({
+          'expiration': '12/29',
+          'cardExpiry': '12/29',
+        });
+
+        expect(redacted['expiration'], '***');
+        expect(redacted['cardExpiry'], '***');
+      });
+
+      test('masks auth tokens, secrets and api keys', () {
+        final redacted = RequestFunctions.redactSensitive({
+          'accessToken': 'eyJabc',
+          'refreshToken': 'eyJxyz',
+          'clientSecret': 'shh',
+          'api_key': 'k-123',
+          'Authorization': 'Bearer eyJ',
+        });
+
+        expect(redacted['accessToken'], '***');
+        expect(redacted['refreshToken'], '***');
+        expect(redacted['clientSecret'], '***');
+        expect(redacted['api_key'], '***');
+        expect(redacted['Authorization'], '***');
+      });
+
+      test('does not over-redact unrelated *number fields', () {
+        final redacted = RequestFunctions.redactSensitive({
+          'phoneNumber': '5551234',
+          'accountNumber': '00012345',
+        });
+
+        expect(redacted['phoneNumber'], '5551234');
+        expect(redacted['accountNumber'], '00012345');
+      });
+
+      test('redacts sensitive keys inside nested maps', () {
+        final redacted = RequestFunctions.redactSensitive({
+          'card': {
+            'number': '4111111111111111',
+            'cvv': '123',
+            'holder': 'Jane',
+          },
+        });
+
+        expect(redacted['card'], {
+          'number': '***',
+          'cvv': '***',
+          'holder': 'Jane',
+        });
+      });
+
+      test('redacts sensitive keys inside lists of maps', () {
+        final redacted = RequestFunctions.redactSensitive({
+          'cards': [
+            {'number': '4111111111111111', 'label': 'primary'},
+            {'number': '5500000000000004', 'label': 'backup'},
+          ],
+        });
+
+        expect(redacted['cards'], [
+          {'number': '***', 'label': 'primary'},
+          {'number': '***', 'label': 'backup'},
+        ]);
+      });
+
+      test('leaves non-sensitive values untouched', () {
+        final original = {'email': 'a@b.com', 'amount': 500};
+        final redacted = RequestFunctions.redactSensitive(original);
+
+        expect(redacted, equals(original));
+      });
+
+      test('does not mutate the original map', () {
+        final original = {'password': 'hunter2'};
+        RequestFunctions.redactSensitive(original);
+
+        expect(original['password'], 'hunter2');
+      });
+
+      test('does not mutate nested collections in the original map', () {
+        final original = {
+          'card': {'number': '4111111111111111'},
+        };
+        RequestFunctions.redactSensitive(original);
+
+        expect(original['card'], {'number': '4111111111111111'});
+      });
+    });
+
     group('getResponse', () {
       final mockUri = Uri.parse('https://example.com/api');
 
