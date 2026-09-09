@@ -54,10 +54,8 @@ class RequestFunctions {
   @visibleForTesting
   static Map<String, dynamic> redactSensitive(Map<String, dynamic> data) {
     return data.map(
-      (key, value) => MapEntry(
-        key,
-        _isSensitiveKey(key) ? _redacted : _redactValue(value),
-      ),
+      (key, value) =>
+          MapEntry(key, _isSensitiveKey(key) ? _redacted : _redactValue(value)),
     );
   }
 
