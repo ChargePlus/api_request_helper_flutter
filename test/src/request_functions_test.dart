@@ -227,6 +227,100 @@ void main() {
       });
     });
 
+    group('getResponse with a body that is not the envelope', () {
+      final mockUri = Uri.parse('https://example.com/api');
+      late StreamController<num> statusController;
+
+      setUp(() => statusController = StreamController<num>.broadcast());
+      tearDown(() => statusController.close());
+
+      dynamic call(String body, {num statusCode = 200}) =>
+          RequestFunctions.getResponse(
+            responseBody: body,
+            statusCode: statusCode,
+            uri: mockUri,
+            statusController: statusController,
+          );
+
+      // Each of these used to throw a TypeError, an Error that no
+      // `on Exception` arm catches, so the caller waited forever.
+      for (final body in ['[1,2]', '"text"', '42', 'null', 'true']) {
+        test('$body is a FormatException, not a TypeError', () {
+          expect(() => call(body), throwsFormatException);
+        });
+      }
+
+      test('a non-2xx body with no result is a ServiceException', () {
+        expect(
+          () => call('{"status":500,"message":"boom"}', statusCode: 500),
+          throwsA(
+            isA<ServiceException>()
+                .having((e) => e.code, 'code', 'internal-server-error')
+                .having((e) => e.message, 'message', isNotNull)
+                .having((e) => e.displayMessageKey, 'key', isNull),
+          ),
+        );
+      });
+
+      test('a body status of 400 with no result is a bad-request', () {
+        // The subscriber PATCH's real answer to an invalid date.
+        expect(
+          () => call('{"message":"Fail On Date Validation","status":400}'),
+          throwsA(
+            isA<ServiceException>()
+                .having((e) => e.code, 'code', 'bad-request')
+                .having((e) => e.displayMessageKey, 'key', isNull),
+          ),
+        );
+      });
+
+      test('a result that is not a map still raises the ServiceException', () {
+        expect(
+          () => call('{"status":400,"result":"nope"}'),
+          throwsA(
+            isA<ServiceException>().having(
+              (e) => e.displayMessageKey,
+              'key',
+              isNull,
+            ),
+          ),
+        );
+      });
+
+      test('a display_message_key that is not a string is ignored', () {
+        expect(
+          () => call('{"status":400,"result":{"display_message_key":7}}'),
+          throwsA(
+            isA<ServiceException>().having(
+              (e) => e.displayMessageKey,
+              'key',
+              isNull,
+            ),
+          ),
+        );
+      });
+
+      test('a message that is not a string does not break the exception', () {
+        expect(
+          () => call('{"status":400,"message":{"a":1},"result":{}}'),
+          throwsA(isA<ServiceException>()),
+        );
+      });
+
+      test('a body status that is not a number keeps the HTTP status', () {
+        expect(
+          call('{"status":"ok","result":{"data":1}}'),
+          equals({'data': 1}),
+        );
+      });
+
+      test('a 200 with no result still returns null (unchanged)', () {
+        // Callers cast this themselves. Making it an error is a decision for
+        // every consumer in lockstep, so it is not made here.
+        expect(call('{"status":200,"message":"ok"}'), isNull);
+      });
+    });
+
     group('getException', () {
       const defaultDisplayMessageKey = 'display-message-key';
 
