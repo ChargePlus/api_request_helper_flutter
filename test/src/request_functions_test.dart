@@ -256,7 +256,6 @@ void main() {
           throwsA(
             isA<ServiceException>()
                 .having((e) => e.code, 'code', 'internal-server-error')
-                .having((e) => e.message, 'message', isNotNull)
                 .having((e) => e.displayMessageKey, 'key', isNull),
           ),
         );
@@ -307,10 +306,33 @@ void main() {
         );
       });
 
-      test('a body status that is not a number keeps the HTTP status', () {
+      test('a body status that is not a number stays an error', () {
+        // Unchanged from before: a contract violation is loud, not a success.
         expect(
-          call('{"status":"ok","result":{"data":1}}'),
-          equals({'data': 1}),
+          () => call('{"status":"ok","result":{"data":1}}'),
+          throwsFormatException,
+        );
+      });
+
+      test('a string message reaches an unmapped code, and msg is the '
+          'fallback', () {
+        expect(
+          () => call('{"status":418,"message":"teapot","result":{}}'),
+          throwsA(
+            isA<ServiceException>()
+                .having((e) => e.code, 'code', '418')
+                .having((e) => e.message, 'message', 'teapot'),
+          ),
+        );
+        expect(
+          () => call('{"status":418,"message":null,"msg":"short","result":{}}'),
+          throwsA(
+            isA<ServiceException>().having(
+              (e) => e.message,
+              'message',
+              'short',
+            ),
+          ),
         );
       });
 

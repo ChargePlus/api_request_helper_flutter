@@ -173,10 +173,9 @@ class RequestFunctions {
     /// `Error`, which no `on Exception` arm above can catch.
     final decoded = json.decode(responseBody);
     if (decoded is! Map<String, dynamic>) {
-      throw FormatException(
-        'The response body is not a JSON object',
-        responseBody,
-      );
+      // No `source`: a FormatException prints the start of it, and an error
+      // body can carry things that should not reach a crash report.
+      throw const FormatException('The response body is not a JSON object');
     }
     final mappedResponse = decoded;
 
@@ -186,9 +185,7 @@ class RequestFunctions {
     if (statusCode == 200 &&
         mappedResponse.containsKey('status') &&
         mappedResponse['status'] != 200) {
-      // A body 'status' that is not a number keeps the HTTP status code.
-      effectiveStatusCode =
-          num.tryParse(mappedResponse['status'].toString()) ?? statusCode;
+      effectiveStatusCode = num.parse(mappedResponse['status'].toString());
     }
 
     /// Emit the status code to the status controller
