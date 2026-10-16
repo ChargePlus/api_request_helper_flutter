@@ -206,12 +206,11 @@ class RequestFunctions {
         final result = mappedResponse['result'] as Map<String, dynamic>;
         final displayMessageKey = result['display_message_key'] as String?;
 
-        final errorMessage =
-            mappedResponse.containsKey('message')
-                ? mappedResponse['message'] as String?
-                : mappedResponse.containsKey('msg')
-                ? mappedResponse['msg'] as String?
-                : null;
+        final errorMessage = mappedResponse.containsKey('message')
+            ? mappedResponse['message'] as String?
+            : mappedResponse.containsKey('msg')
+            ? mappedResponse['msg'] as String?
+            : null;
 
         final exception = getException(
           statusCode: effectiveStatusCode,

@@ -53,8 +53,10 @@ class ApiRequestHelper {
     required PackageInfo packageInfo,
     String? userToken,
     ContentType contentType = ContentType.json,
+    Map<String, String>? extraHeaders,
   }) {
     final headers = {
+      ...?extraHeaders,
       'Content-Type': contentType.value,
       'x-api-token': xApiToken,
       'x-api-key': xApiKey,
@@ -115,6 +117,9 @@ class ApiRequestHelper {
   /// Calls POST api which will emit [Future] dynamic
   ///
   /// Throws a [ServiceException] if response status code is not 200
+  ///
+  /// [extraHeaders] are sent alongside the default headers. They cannot
+  /// override a default header: on a clash the default value wins.
   Future<dynamic> post({
     required Uri uri,
     required Map<String, dynamic> data,
@@ -123,6 +128,7 @@ class ApiRequestHelper {
     bool isResult = true,
     ContentType contentType = ContentType.json,
     Duration timeout = const Duration(minutes: 1),
+    Map<String, String>? extraHeaders,
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
     final packageInfo = await PackageInfo.fromPlatform();
@@ -130,6 +136,7 @@ class ApiRequestHelper {
       packageInfo: packageInfo,
       userToken: userToken,
       contentType: contentType,
+      extraHeaders: extraHeaders,
     );
 
     if (contentType == ContentType.formData) {
