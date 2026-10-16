@@ -165,7 +165,19 @@ class RequestFunctions {
     bool isResult = true,
   }) {
     /// Decode the response body to a map
-    final mappedResponse = json.decode(responseBody) as Map<String, dynamic>;
+    ///
+    /// A body that is valid JSON but not an object (a bare array, a string, a
+    /// number) is not the API's envelope. It is reported as a
+    /// [FormatException], the type `json.decode` already raises for a body that
+    /// is not JSON at all, instead of letting the cast throw a [TypeError]: an
+    /// `Error`, which no `on Exception` arm above can catch.
+    final decoded = json.decode(responseBody);
+    if (decoded is! Map<String, dynamic>) {
+      // No `source`: a FormatException prints the start of it, and an error
+      // body can carry things that should not reach a crash report.
+      throw const FormatException('The response body is not a JSON object');
+    }
+    final mappedResponse = decoded;
 
     /// If the status code is 200 but the 'status' field in the response body
     /// is not 200, use the body's status as the effective status code
@@ -203,14 +215,20 @@ class RequestFunctions {
         /// Throw a ServiceException based on the status code
         /// and the 'message' field in the response body
         /// and the 'displayMessageKey' field in the response body (if any)
-        final result = mappedResponse['result'] as Map<String, dynamic>;
-        final displayMessageKey = result['display_message_key'] as String?;
-
-        final errorMessage = mappedResponse.containsKey('message')
-            ? mappedResponse['message'] as String?
-            : mappedResponse.containsKey('msg')
-            ? mappedResponse['msg'] as String?
+        ///
+        /// An error body does not always follow the envelope: a proxy, a WAF or
+        /// a rejected request can answer without a `result` map, or with a
+        /// `message` that is not a string. Reading those with a cast threw a
+        /// [TypeError] while building the exception, so no [ServiceException]
+        /// was ever raised and the caller was left waiting.
+        final result = mappedResponse['result'];
+        final key = result is Map<String, dynamic>
+            ? result['display_message_key']
             : null;
+        final displayMessageKey = key is String ? key : null;
+
+        final message = mappedResponse['message'] ?? mappedResponse['msg'];
+        final errorMessage = message is String ? message : null;
 
         final exception = getException(
           statusCode: effectiveStatusCode,
