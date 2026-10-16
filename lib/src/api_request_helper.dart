@@ -56,12 +56,12 @@ class ApiRequestHelper {
     Map<String, String>? extraHeaders,
   }) {
     final headers = {
+      ...?extraHeaders,
       'Content-Type': contentType.value,
       'x-api-token': xApiToken,
       'x-api-key': xApiKey,
       'build-number': packageInfo.buildNumber,
       'platform': kIsWeb ? 'web' : Platform.operatingSystem,
-      ...?extraHeaders,
     };
 
     if (userToken != null) {
@@ -118,7 +118,8 @@ class ApiRequestHelper {
   ///
   /// Throws a [ServiceException] if response status code is not 200
   ///
-  /// [extraHeaders] are sent on top of the default headers.
+  /// [extraHeaders] are sent alongside the default headers. They cannot
+  /// override a default header: on a clash the default value wins.
   Future<dynamic> post({
     required Uri uri,
     required Map<String, dynamic> data,

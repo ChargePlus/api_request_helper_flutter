@@ -26,11 +26,15 @@ void main() {
         );
       });
 
-      Future<void> post({Map<String, String>? extraHeaders}) {
+      Future<void> post({
+        String? userToken,
+        Map<String, String>? extraHeaders,
+      }) {
         return http.runWithClient(
           () => ApiRequestHelper().post(
             uri: uri,
             data: const {},
+            userToken: userToken,
             extraHeaders: extraHeaders,
           ),
           () => MockClient((request) async {
@@ -48,6 +52,27 @@ void main() {
 
         expect(sentHeaders['X-Firebase-AppCheck'], 'token');
         expect(sentHeaders['build-number'], '1');
+      });
+
+      test('never lets extraHeaders override the default headers', () async {
+        await post(
+          userToken: 'real-token',
+          extraHeaders: {
+            'Authorization': 'forged',
+            'Content-Type': 'text/plain',
+            'x-api-key': 'forged',
+            'x-api-token': 'forged',
+            'build-number': 'forged',
+            'platform': 'forged',
+          },
+        );
+
+        expect(sentHeaders['Authorization'], 'real-token');
+        expect(sentHeaders['Content-Type'], startsWith('application/json'));
+        expect(sentHeaders['x-api-key'], isNot('forged'));
+        expect(sentHeaders['x-api-token'], isNot('forged'));
+        expect(sentHeaders['build-number'], '1');
+        expect(sentHeaders['platform'], isNot('forged'));
       });
 
       test('sends only the default headers without extraHeaders', () async {
