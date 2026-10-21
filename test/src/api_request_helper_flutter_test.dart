@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:api_request_helper_flutter/api_request_helper_flutter.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -80,6 +81,100 @@ void main() {
 
         expect(sentHeaders.containsKey('X-Firebase-AppCheck'), isFalse);
         expect(sentHeaders['build-number'], '1');
+      });
+    });
+
+    group('readBytesWithHeaders', () {
+      final uri = Uri.parse('https://files.chargeplus.co/invoice/123');
+      final body = Uint8List.fromList(const [0x25, 0x50, 0x44, 0x46]);
+      late Map<String, String> sentHeaders;
+
+      MockClient respond(
+        int status, {
+        Map<String, String> headers = const {},
+      }) => MockClient((request) async {
+        sentHeaders = request.headers;
+        return http.Response.bytes(body, status, headers: headers);
+      });
+
+      test('returns the bytes with the response headers', () async {
+        final result = await http.runWithClient(
+          () => ApiRequestHelper().readBytesWithHeaders(uri: uri),
+          () => respond(
+            200,
+            headers: {
+              'content-type': 'application/pdf',
+              'content-disposition': 'attachment; filename="invoice.pdf"',
+            },
+          ),
+        );
+
+        expect(result.bytes, body);
+        expect(result.headers['content-type'], 'application/pdf');
+        expect(
+          result.headers['content-disposition'],
+          'attachment; filename="invoice.pdf"',
+        );
+      });
+
+      test('sends the user token as readBytes does, and only then', () async {
+        await http.runWithClient(
+          () => ApiRequestHelper().readBytesWithHeaders(
+            uri: uri,
+            userToken: 'token',
+          ),
+          () => respond(200),
+        );
+        expect(sentHeaders['Authorization'], 'token');
+
+        await http.runWithClient(
+          () => ApiRequestHelper().readBytesWithHeaders(uri: uri),
+          () => respond(200),
+        );
+        expect(sentHeaders.containsKey('Authorization'), isFalse);
+      });
+
+      // Callers read the status from the message (`failed with status 404`),
+      // so a failure must read exactly as readBytes' does.
+      for (final status in [404, 500]) {
+        test(
+          'fails on $status with the same ClientException as readBytes',
+          () async {
+            Future<Object?> errorOf(Future<Object?> Function() call) async {
+              try {
+                await http.runWithClient(call, () => respond(status));
+              } on http.ClientException catch (error) {
+                return error;
+              }
+              return null;
+            }
+
+            final expected =
+                await errorOf(
+                      () => ApiRequestHelper().readBytes(uri: uri),
+                    )
+                    as http.ClientException?;
+            final actual =
+                await errorOf(
+                      () => ApiRequestHelper().readBytesWithHeaders(uri: uri),
+                    )
+                    as http.ClientException?;
+
+            expect(expected, isNotNull);
+            expect(actual?.message, expected?.message);
+            expect(actual?.uri, expected?.uri);
+            expect(actual?.message, contains('failed with status $status'));
+          },
+        );
+      }
+
+      test('leaves readBytes returning the bytes alone', () async {
+        final bytes = await http.runWithClient(
+          () => ApiRequestHelper().readBytes(uri: uri),
+          () => respond(200, headers: {'content-type': 'application/pdf'}),
+        );
+
+        expect(bytes, body);
       });
     });
   });

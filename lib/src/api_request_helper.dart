@@ -352,6 +352,34 @@ class ApiRequestHelper {
     return byteFile;
   }
 
+  /// Calls GET api like [readBytes], and keeps the response's headers, such
+  /// as `content-type` and `content-disposition`, which [readBytes] drops.
+  ///
+  /// Sends the same request and fails the same way: a status of 400 or above
+  /// throws the same ClientException `http.readBytes` does, word for word, so
+  /// callers that read the status from its message keep working.
+  Future<BytesWithHeaders> readBytesWithHeaders({
+    required Uri uri,
+    String? userToken,
+  }) async {
+    final response = await http.get(
+      uri,
+      headers: userToken != null ? {'Authorization': userToken} : null,
+    );
+    if (response.statusCode >= 400) {
+      // As `BaseClient._checkResponseSuccess` builds it in package:http.
+      var message = 'Request to $uri failed with status ${response.statusCode}';
+      if (response.reasonPhrase != null) {
+        message = '$message: ${response.reasonPhrase}';
+      }
+      throw http.ClientException('$message.', uri);
+    }
+    return BytesWithHeaders(
+      bytes: response.bodyBytes,
+      headers: response.headers,
+    );
+  }
+
   /// Disposes status code stream controller
   void dispose() => _controller.close();
 }
