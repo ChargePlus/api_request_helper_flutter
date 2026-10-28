@@ -1,0 +1,26 @@
+# Codex project config (loads once you trust this project in Codex).
+#
+# api        read-only (ask / review)
+# api-build  + worktree writes and network (the default)
+default_permissions = "api-build"
+
+[permissions.api]
+extends = ":read-only"
+
+[permissions.api-build]
+extends = "api"
+
+[permissions.api-build.network]
+enabled = true # pub get
+
+[permissions.api-build.filesystem]
+":tmpdir" = "write"
+":slash_tmp" = "write"
+"~/.pub-cache" = "write"
+"~/.dart-tool" = "write"   # flutter/dart telemetry
+"~/.dartServer" = "write"  # analysis server cache
+"~/.flutter" = "write"
+"~/.config/flutter" = "write"  # tool_state
+
+[permissions.api-build.filesystem.":workspace_roots"]
+"." = "write"
