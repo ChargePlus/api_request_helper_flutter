@@ -150,9 +150,7 @@ void main() {
             }
 
             final expected =
-                await errorOf(
-                      () => ApiRequestHelper().readBytes(uri: uri),
-                    )
+                await errorOf(() => ApiRequestHelper().readBytes(uri: uri))
                     as http.ClientException?;
             final actual =
                 await errorOf(
