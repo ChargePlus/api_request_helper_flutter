@@ -261,17 +261,23 @@ void main() {
         );
       });
 
-      test('a body status of 400 with no result is a bad-request', () {
-        // The subscriber PATCH's real answer to an invalid date.
-        expect(
-          () => call('{"message":"Fail On Date Validation","status":400}'),
-          throwsA(
-            isA<ServiceException>()
-                .having((e) => e.code, 'code', 'bad-request')
-                .having((e) => e.displayMessageKey, 'key', isNull),
-          ),
-        );
-      });
+      // The subscriber PATCH's real answer to an invalid date
+      // (chargeplus_partner#600), with the result missing or null.
+      for (final body in [
+        '{"message":"Fail On Date Validation","status":400}',
+        '{"message":"Fail On Date Validation","status":400,"result":null}',
+      ]) {
+        test('$body is a bad-request', () {
+          expect(
+            () => call(body),
+            throwsA(
+              isA<ServiceException>()
+                  .having((e) => e.code, 'code', 'bad-request')
+                  .having((e) => e.displayMessageKey, 'key', isNull),
+            ),
+          );
+        });
+      }
 
       test('a result that is not a map still raises the ServiceException', () {
         expect(
