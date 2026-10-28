@@ -225,6 +225,32 @@ void main() {
           expect(emittedStatusCodes, equals([400]));
         });
       });
+
+      group('an error body with no result', () {
+        // A real rejection: chargeplus_partner#600. A TypeError here is an
+        // Error, not an Exception, so a caller's `on Exception` never sees it
+        // and its form stays in progress.
+        for (final body in [
+          '{"message":"Fail On Date Validation","status":400}',
+          '{"message":"Fail On Date Validation","status":400,"result":null}',
+        ]) {
+          test('throws a ServiceException carrying its message: $body', () {
+            expect(
+              () => RequestFunctions.getResponse(
+                responseBody: body,
+                statusCode: 400,
+                uri: mockUri,
+                statusController: StreamController<num>(),
+              ),
+              throwsA(
+                isA<ServiceException>()
+                    .having((e) => e.code, 'code', 'bad-request')
+                    .having((e) => e.displayMessageKey, 'key', isNull),
+              ),
+            );
+          });
+        }
+      });
     });
 
     group('getException', () {

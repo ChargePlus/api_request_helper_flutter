@@ -203,8 +203,11 @@ class RequestFunctions {
         /// Throw a ServiceException based on the status code
         /// and the 'message' field in the response body
         /// and the 'displayMessageKey' field in the response body (if any)
-        final result = mappedResponse['result'] as Map<String, dynamic>;
-        final displayMessageKey = result['display_message_key'] as String?;
+        // Nullable: a rejection can come without one (`{"message": ...,
+        // "status": 400}`), and a failed cast here is an Error, which a
+        // caller's `on Exception` never catches.
+        final result = mappedResponse['result'] as Map<String, dynamic>?;
+        final displayMessageKey = result?['display_message_key'] as String?;
 
         final errorMessage = mappedResponse.containsKey('message')
             ? mappedResponse['message'] as String?
