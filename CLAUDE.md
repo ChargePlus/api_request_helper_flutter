@@ -41,7 +41,8 @@ available it takes most of the load; otherwise work in Claude as usual.
 ## Releases and repo facts
 
 - Git Flow release: version bump on `release/X.Y.Z`, merge to
-  main + develop, bare-semver tag (currently 1.7.x).
+  main + develop, bare-semver tag (currently 1.8.x). Cut it with the
+  `cut-release` skill.
 - Pubspec floor is `flutter >=3.38.1` — mind it when adding deps.
 - The MIT badge in the README is stale — no LICENSE file exists.
 
