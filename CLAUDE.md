@@ -8,6 +8,12 @@ whatever lands on `main` reaches the whole fleet on their next
 `pub get`. Depends on `exceptions_flutter` (also unpinned git) for
 `ServiceException`.
 
+## Codex (optional builder)
+
+Before implementation work, invoke the `codex` skill. Where Codex is
+available it takes most of the load; otherwise work in Claude as usual.
+`AGENTS.md` points Codex back at this file — keep repo guidance here.
+
 ## Blast-radius rules
 
 - Breaking public-API changes only when the same piece of work updates
@@ -35,6 +41,13 @@ whatever lands on `main` reaches the whole fleet on their next
 ## Releases and repo facts
 
 - Git Flow release: version bump on `release/X.Y.Z`, merge to
-  main + develop, bare-semver tag (currently 1.7.x).
+  main + develop, bare-semver tag (currently 1.8.x). Cut it with the
+  `cut-release` skill.
 - Pubspec floor is `flutter >=3.38.1` — mind it when adding deps.
 - The MIT badge in the README is stale — no LICENSE file exists.
+
+## Pre-merge routine
+
+Before handing a PR over for review, run the `routine` skill (`/simplify`,
+`/code-review`, gates, consumer impact). It stops at the human review gate;
+never merge.
