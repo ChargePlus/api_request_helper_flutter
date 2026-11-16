@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:api_request_helper_flutter/src/api_service_exception.dart';
 import 'package:exceptions_flutter/exceptions_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -238,11 +239,17 @@ class RequestFunctions {
     }
   }
 
+  /// [text] when it holds something besides whitespace, otherwise null.
+  static String? _usable(String? text) =>
+      text == null || text.trim().isEmpty ? null : text;
+
   /// Returns a [ServiceException] based on the status code and error message
   ///
   /// Parameters:
   /// - [statusCode] The status code
-  /// - [errorMessage] The error message
+  /// - [errorMessage] The error message. For 400 and 422 it is exposed as
+  /// [ApiServiceException.serverMessage] and never replaces the fixed
+  /// `message`; a blank value is treated as absent.
   static ServiceException getException({
     required num statusCode,
     String? errorMessage,
@@ -259,7 +266,8 @@ class RequestFunctions {
           stackTrace: stackTrace,
         );
       case 400:
-        return ServiceException(
+        return ApiServiceException(
+          serverMessage: _usable(errorMessage),
           code: 'bad-request',
           message: 'The server could not process the request',
           displayMessageKey: displayMessageKey,
@@ -308,7 +316,8 @@ class RequestFunctions {
           stackTrace: stackTrace,
         );
       case 422:
-        return ServiceException(
+        return ApiServiceException(
+          serverMessage: _usable(errorMessage),
           code: 'unprocessable-entity',
           message: 'Could not process due to possible semantic errors',
           displayMessageKey: displayMessageKey,
