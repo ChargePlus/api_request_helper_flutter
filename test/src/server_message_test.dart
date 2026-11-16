@@ -89,6 +89,26 @@ void main() {
       });
     }
 
+    test('a 200 whose body status is 422 exposes the message too', () {
+      final e = thrown('{"status":422,"message":"Price too low"}', 200);
+      expect(e.code, 'unprocessable-entity');
+      expect(e.serverMessage, 'Price too low');
+    });
+
+    test('getException exposes errorMessage on 400 and 422 only', () {
+      for (final status in [400, 422]) {
+        final e = RequestFunctions.getException(
+          statusCode: status,
+          errorMessage: 'x',
+        );
+        expect((e as ApiServiceException).serverMessage, 'x');
+      }
+      expect(
+        RequestFunctions.getException(statusCode: 404, errorMessage: 'x'),
+        isNot(isA<ApiServiceException>()),
+      );
+    });
+
     test('is still a ServiceException', () {
       expect(thrown('{"message":"x"}', 400), isA<ServiceException>());
     });
