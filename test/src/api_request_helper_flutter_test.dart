@@ -15,6 +15,35 @@ void main() {
       expect(ApiRequestHelper(), isNotNull);
     });
 
+    group('isChargeplusHost', () {
+      final helper = ApiRequestHelper();
+
+      test('accepts the domain and its subdomains', () {
+        for (final host in [
+          'chargeplus.co',
+          'api.chargeplus.co',
+          'cp-api-dev.chargeplus.co',
+          'files.chargeplus.co',
+        ]) {
+          expect(helper.isChargeplusHost(host), isTrue, reason: host);
+        }
+      });
+
+      test('rejects hosts that only contain the domain', () {
+        for (final host in [
+          'chargeplus.co.example.com',
+          'evilchargeplus.co',
+          'chargeplus.com',
+          'www.chargeplus.com',
+          'notchargeplus.co',
+          'example.com',
+          '',
+        ]) {
+          expect(helper.isChargeplusHost(host), isFalse, reason: host);
+        }
+      });
+    });
+
     group('post', () {
       final uri = Uri.parse('https://api.chargeplus.co/auth/getSMSOTPv2');
       late Map<String, String> sentHeaders;

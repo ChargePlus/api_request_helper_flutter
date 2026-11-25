@@ -26,6 +26,13 @@ class ApiRequestHelper {
   /// Charge+ host name
   final chargeplusDomain = 'chargeplus.co';
 
+  /// Whether [host] is the Charge+ domain or one of its subdomains, so it
+  /// may receive the API key, token and `Authorization` headers in release
+  /// builds.
+  @visibleForTesting
+  bool isChargeplusHost(String host) =>
+      host == chargeplusDomain || host.endsWith('.$chargeplusDomain');
+
   /// Convenient getter for status code
   Stream<num> get statusCode async* {
     yield* _controller.stream;
@@ -82,7 +89,7 @@ class ApiRequestHelper {
     Duration timeout = const Duration(minutes: 1),
     int maxAttempts = 3,
   }) async {
-    final isChargeplus = uri.host.contains(chargeplusDomain);
+    final isChargeplus = isChargeplusHost(uri.host);
     final packageInfo = await PackageInfo.fromPlatform();
     final headers = _createHeaders(
       packageInfo: packageInfo,
@@ -135,7 +142,7 @@ class ApiRequestHelper {
     Map<String, String>? extraHeaders,
     Future<void>? abortTrigger,
   }) async {
-    final isChargeplus = uri.host.contains(chargeplusDomain);
+    final isChargeplus = isChargeplusHost(uri.host);
     final packageInfo = await PackageInfo.fromPlatform();
     final headers = _createHeaders(
       packageInfo: packageInfo,
@@ -226,7 +233,7 @@ class ApiRequestHelper {
     ContentType contentType = ContentType.json,
     Duration timeout = const Duration(minutes: 1),
   }) async {
-    final isChargeplus = uri.host.contains(chargeplusDomain);
+    final isChargeplus = isChargeplusHost(uri.host);
     final packageInfo = await PackageInfo.fromPlatform();
     final headers = _createHeaders(
       packageInfo: packageInfo,
@@ -287,7 +294,7 @@ class ApiRequestHelper {
     ContentType contentType = ContentType.json,
     Duration timeout = const Duration(minutes: 1),
   }) async {
-    final isChargeplus = uri.host.contains(chargeplusDomain);
+    final isChargeplus = isChargeplusHost(uri.host);
     final packageInfo = await PackageInfo.fromPlatform();
     final headers = _createHeaders(
       packageInfo: packageInfo,
@@ -347,7 +354,7 @@ class ApiRequestHelper {
     ContentType contentType = ContentType.json,
     Duration timeout = const Duration(minutes: 1),
   }) async {
-    final isChargeplus = uri.host.contains(chargeplusDomain);
+    final isChargeplus = isChargeplusHost(uri.host);
     final packageInfo = await PackageInfo.fromPlatform();
     final headers = _createHeaders(
       packageInfo: packageInfo,
