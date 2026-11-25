@@ -17,7 +17,7 @@ is the **Independent verdict** gate. The procedure is in
    consumer: a Dart test in the scratchpad that depends on this checkout
    by path and calls the changed API against a local `HttpServer` on
    `127.0.0.1`, at the merge base and at the head. For a change with no
-   consumer to stand in for (`.claude/`, `.github/`, `script.sh`), run
+   consumer to stand in for (`.claude/`, `.codex/`, `.github/`, `CLAUDE.md`, `AGENTS.md`, `script.sh`), run
    each changed command the way its caller does, parent against head, as
    gates.md says. First ask whether the run can tell fixed from broken;
    if it cannot, the verdict is `PASS+NOTES (partial: <why>)` at best.

@@ -34,9 +34,8 @@ check enforces that shape on each PR. A PR merged before 2026-11-25 may
 carry the older `routine:status` block instead. If one carries neither,
 run the review gates on it before releasing — don't release over it.
 
-The bump defaults to the most severe **API change** line among those
-PRs: Breaking → `major`, Behavior or Additive → `minor`, Internal or
-`None: prose-only` → `patch`. An argument that asks for less stops for
+The bump defaults to the most severe bump named after the `→` on those
+PRs' **API change** lines (`None: prose-only` counts as `patch`). An argument that asks for less stops for
 Ezra.
 
 ## 2. Release

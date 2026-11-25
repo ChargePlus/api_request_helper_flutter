@@ -1,6 +1,6 @@
 ---
 name: review-gates
-description: "The single entry point for api_request_helper_flutter's review gates. Run it before pstack's Opening a PR playbook (which ends every playbook), and when asked to gate, review or check a branch or PR. Scopes the diff against develop, runs the gates in .claude/extensions/review/gates.md whose trigger the diff meets, in its order, and writes the PR body's ## Review gates section that CI checks. Use for: review gates, gate this, review this PR, check this branch, pre-merge checks, is this ready to open."
+description: "The single entry point for api_request_helper_flutter's review gates. Run it in place of pstack's Opening a PR playbook (which ends every playbook; its step 5 opens the PR), and when asked to gate, review or check a branch or PR. Scopes the diff against develop, runs the gates in .claude/extensions/review/gates.md whose trigger the diff meets, in its order, and writes the PR body's ## Review gates section that CI checks. Use for: review gates, gate this, review this PR, check this branch, pre-merge checks, is this ready to open."
 ---
 
 # review-gates: api_request_helper_flutter
@@ -16,9 +16,9 @@ copy its table here.
    `None: prose-only`.
 2. **Pick.** Each gate in gates.md's table whose *Runs when* the diff
    meets. A gate you skip is `n/a: <missing trigger>`.
-3. **Run.** In gates.md's **Order**, each seeing the fixes of the ones
-   before it. Cleanup is the `deslop` skill's first three passes: cite it
-   if it ran on this head. CI and Tests run on every head you push.
+3. **Run.** In gates.md's **Order** up to the independent verdict (step
+   6), each seeing the fixes of the ones before it. Cleanup is gates.md's
+   Cleanup row; a `deslop` run on this head covers it: cite it. CI and Tests run on every head you push.
 4. **Triage.** gates.md's *Triage rule*: every finding applied or skipped
    with a checkable reason, each gate's fixes in their own commit. Behavior
    and Breaking stop for Ezra (`.claude/extensions/pstack.md`, hard stop 1).

@@ -37,6 +37,10 @@ hard stop.
   this repo (run `codex` once in the main checkout and accept the trust
   prompt), a role set to `codex` runs on it; see "Codex is a subagent".
   Anywhere else the role falls back to `opus` at the role's effort.
+- Codex reads worker.md from a per-user cache,
+  `${XDG_CACHE_HOME:-~/.cache}/chargeplus/pstack/<ref>/`, which
+  chargeplus_customer's `scripts/install_pstack_codex.sh` fills. Without
+  it, `codex.sh` sends no pstack kickoff and says so.
 - **Upgrade:** change `ref` in `.claude/settings.json` to the new full
   commit SHA (never a branch), run `claude plugin marketplace update
   cursor-plugins`, then `claude plugin update pstack@cursor-plugins`. The
@@ -48,8 +52,9 @@ hard stop.
 
 1. **Human approvals.** "Just do it" and *Never Block on the Human* cover
    everything except these, which stop for Ezra:
-   - merging into `develop` or `main`, and cutting a release (invoking
-     `cut-release` is the approval for that release)
+   - merging into `develop` or `main`, and cutting a release (Ezra invoking
+     `cut-release` is the approval for that release; an agent never starts
+     it on its own)
    - a change the review gates classify as **Behavior** or **Breaking**
      (`review/gates.md`, API compatibility): Ezra approves the plan and the
      consumer PRs before the library PR is merge-ready
@@ -77,13 +82,15 @@ hard stop.
 6. **The PR body.** `.github/PULL_REQUEST_TEMPLATE.md`, with its `## Review
    gates` section filled in (`review/gates.md`, The Review gates block).
    pstack's own headings (`Why`, `What changed`, `Scope`, `Tradeoffs`,
-   `Blast Radius`, `Verification`) go inside the template's Description,
-   not instead of it. The Review gates section is required on top of
+   `Blast Radius`, `Verification`) go as `###` headings inside the template's
+   Description, not instead of it. The Review gates section is required on top of
    worker.md's heading list, and the **Review gates** CI check fails the PR
    without it. The PR title is a Conventional Commit, which CI checks.
+   worker.md's 40-line cap counts the Description only, not the template
+   or the Review gates section.
 7. **Tools we don't have.** `/deslop`, `control-ui` and `control-cli` come
-   from Cursor's `cursor-team-kit`. Here they resolve to the repo skills of
-   those names in `.claude/skills/`: `deslop` runs `/pstack:no-comments`,
+   from Cursor's `cursor-team-kit`. Here `/deslop` and `control-cli` are the
+   repo skills of those names in `.claude/skills/`: `deslop` runs `/pstack:no-comments`,
    `/pstack:unslop`, the built-in `/simplify` and the build gates;
    `control-cli` runs the independent verdict from a scratch consumer
    (`review/gates.md`). There is no app, so a step that says `control-ui`
@@ -99,21 +106,21 @@ hard stop.
 | Before commit | The `deslop` skill: cleanup, then `dart format --line-length 80 --set-exit-if-changed lib test`, `flutter analyze lib test` and `very_good test -j 4 --coverage --test-randomize-ordering-seed random` (CLAUDE.md, Verify). A new word in any `.md` goes in `.github/cspell.json`. |
 | Review and verify | The `review-gates` skill: it runs the gates in `review/gates.md` that the diff triggers, in that file's order, and writes the PR body's Review gates section, which CI checks. |
 | PR | The PR body (hard stop 6), `--base develop`, `--assignee @me`. |
-| Release | `cut-release`: it checks every PR since the last tag carries a Review gates section, and takes the bump from their API classifications. |
+| Release | `cut-release`: it checks every PR since the last tag carries a Review gates section, and takes the bump from their API change lines. |
 | Evidence | `show-me-your-work` trails go to the scratchpad, linked or summarized in the PR. No scratch output is committed. |
 
 ## Playbooks: pstack steps + add-ons
 
 | pstack playbook | Runs in full, plus |
 | --- | --- |
-| Feature, Bug fix, Refactoring | the API classification before design; the `review-gates` skill through the independent verdict (step 5 is `control-cli`) |
+| Feature, Bug fix, Refactoring | the API classification before design; the `review-gates` skill through the independent verdict (its verify step is `control-cli`) |
 | Perf issue, Hillclimb, `benchmark-checklist` | the API compatibility gate: a retry, timeout or backoff change multiplies load across every app |
 | Investigation | a `codex` subagent with `Mode: ask` for repo-wide sweeps; the consumer sweep in `gates.md` for "who calls this" |
-| Opening a PR | starts with the `review-gates` skill; hard stops 4 and 6 |
+| Opening a PR | runs as step 5 of the `review-gates` skill, after the branch is gated; hard stops 4 and 6 |
 | Shipping | step 1, the independent verdict, is the `control-cli` skill; everything after it stops at merge-ready (hard stop 2) |
 | Babysit | as written; it never rebases or merges. Take status from `gh pr checks <n>` and `gh pr view <n> --json mergeable,mergeStateStatus,reviewDecision` where the watcher needs `bun` and it is missing. |
 | Pause safely, Session pickup | as written. The resume note stays out of the repo (it is public): the scratchpad or an untracked file. |
-| Autonomous run, Autopilot-full | hard stops 1 and 2 still stop the run; park the item, note the question, take the next one |
+| Autonomous run, Autopilot-full | hard stops 1 and 2 still stop the run (park the item, note the question, take the next one), and hard stop 3 holds: where the playbook rebases and force-pushes, merge `develop` in instead |
 | `interrogate` | the lenses and repo traps in `gates.md` go into every adversary's brief; Codex is its non-Claude seat |
 | `blast-radius` | the consumer-impact gate in `gates.md` (it names the consumers and how to search them) |
 | `reflect`, `correct` | the lesson also becomes a lint, CI check or test where it can, then leaves the repo traps |
@@ -125,11 +132,13 @@ Every agent brief starts with pstack's kickoff line, then ours:
 
 ```
 Read <pstack>/skills/poteto-mode/worker.md before anything else.
-Then read .claude/extensions/pstack.md: its add-on gates are part of your bar, and its hard stops (approvals, no merge, no destructive git, secrets and the public repo, the PR body) override worker.md.
+Then read .claude/extensions/pstack.md: its add-on gates are part of your bar, and its hard stops (approvals, no merge, no destructive git, forge and branches, secrets and the public repo, the PR body) override worker.md.
 ```
 
-`codex.sh` and the SessionStart hook write both lines with the path filled
-in. worker.md says the bar in the kickoff is the whole bar, and gives way
+The SessionStart hook prints both lines with the path filled in, and
+`codex.sh` writes them into `start` and `resume` prompts when the pin is in
+the Codex cache (Install and upgrade). An `ask` carries them in the lead's
+brief; `review-diff` is Codex's own review and takes no kickoff. worker.md says the bar in the kickoff is the whole bar, and gives way
 to a kickoff only when the kickoff says so in words. The second line is
 what makes the gates and the hard stops part of that bar.
 

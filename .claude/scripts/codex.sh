@@ -136,7 +136,8 @@ preamble() {
 Read $worker before anything else. Then read .claude/extensions/pstack.md:
 its add-on gates, and the hard rules, gates and report format below, are
 part of your bar, and its hard stops (approvals, no merge, no destructive
-git, secrets and the public repo, the PR body) override worker.md.
+git, forge and branches, secrets and the public repo, the PR body)
+override worker.md.
 
 EOF
   elif [ -n "$ref" ]; then

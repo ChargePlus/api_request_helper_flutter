@@ -93,8 +93,8 @@ in one message, each with the diff, the lenses, the repo traps and the
 instruction to break the change and prove each finding with a run. The
 Codex seat's brief skips the worker.md pair; a `CODEX UNAVAILABLE` reply
 drops the seat with a note. Write "interrogate (panel run by hand: pstack
-not installed)" in the Review gates block. `/pstack:no-comments` has no
-hand-run form: mark it ❌ blocked with the reason.
+not installed)" in the Review gates block. `/pstack:no-comments` and
+`/pstack:unslop` have no hand-run form: mark it ❌ blocked with the reason.
 
 ### Edge-case lenses
 

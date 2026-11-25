@@ -1,6 +1,6 @@
 # api_request_helper_flutter
 
-Private HTTP-layer library (`publish_to: none`) wrapping GET / POST /
+Unpublished HTTP-layer library (`publish_to: none`) wrapping GET / POST /
 PUT / DELETE over `package:http` with retries. Consumed via UNPINNED git
 URL by all three apps and dozens of their local domain packages (26
 in the ChargePlus Customer app alone) — and consumers gitignore `pubspec.lock`, so

@@ -65,14 +65,14 @@ def main():
             f"follow poteto-mode in full: read {skills}/poteto-mode/SKILL.md and run its playbook, plus the "
             "add-on gates and hard stops in .claude/extensions/pstack.md (gates, in .claude/extensions/review/gates.md: "
             f"{GATES}, an independent verifier's PASS/FAIL; hard stops: approvals, no merge, no destructive git, "
-            "secrets and the public repo, the PR body). Run the review-gates skill before pstack's Opening a PR playbook: the PR body's ## Review gates section is required and the Review gates CI check reads it. "
+            "forge and branches, secrets and the public repo, the PR body). Run the review-gates skill in place of pstack's Opening a PR playbook (its step 5 opens the PR): the PR body's ## Review gates section is required and the Review gates CI check reads it. "
             "/deslop and control-cli are this repo's skills of those names (a control-ui step uses control-cli). "
             "This is a library that every app pulls unpinned, so a "
             "change here is a change to every consumer. Codex is a subagent (subagent_type \"codex\") wherever a role names it. "
             f"pstack skills are slash-only: run one by reading {skills}/<name>/SKILL.md "
             f"(adapter: {p}/docs/harness/claude-code.md). Every agent brief you write starts with "
             f"`Read {skills}/poteto-mode/worker.md before anything else.` then "
-            "`Then read .claude/extensions/pstack.md: its add-on gates are part of your bar, and its hard stops (approvals, no merge, no destructive git, secrets and the public repo, the PR body) override worker.md.`"
+            "`Then read .claude/extensions/pstack.md: its add-on gates are part of your bar, and its hard stops (approvals, no merge, no destructive git, forge and branches, secrets and the public repo, the PR body) override worker.md.`"
         )
     print(json.dumps({"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": text}}))
 
