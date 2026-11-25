@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:api_request_helper_flutter/api_request_helper_flutter.dart';
@@ -81,6 +83,120 @@ void main() {
 
         expect(sentHeaders.containsKey('X-Firebase-AppCheck'), isFalse);
         expect(sentHeaders['build-number'], '1');
+      });
+
+      group('with an abort trigger', () {
+        late Completer<void> abort;
+
+        setUp(() => abort = Completer<void>());
+
+        test(
+          'closes the connection and fails with the abort error when it fires',
+          () async {
+            final silentServer = await ServerSocket.bind(
+              InternetAddress.loopbackIPv4,
+              0,
+            );
+            addTearDown(silentServer.close);
+            final connected = Completer<void>();
+            final closed = Completer<void>();
+            silentServer.listen((socket) {
+              socket.listen(
+                (_) {
+                  if (!connected.isCompleted) connected.complete();
+                },
+                onDone: closed.complete,
+                onError: (Object _) => closed.complete(),
+              );
+            });
+
+            final result = ApiRequestHelper().post(
+              uri: Uri.parse('http://127.0.0.1:${silentServer.port}/list'),
+              data: const {'page': 1},
+              abortTrigger: abort.future,
+            );
+            await connected.future;
+
+            abort.complete();
+
+            await expectLater(
+              result.timeout(const Duration(seconds: 5)),
+              throwsA(isA<http.RequestAbortedException>()),
+            );
+            await closed.future.timeout(const Duration(seconds: 5));
+          },
+        );
+
+        test(
+          'sends the same request with the trigger, and closes its client',
+          () async {
+            final client = _RecordingClient();
+
+            final result = await http.runWithClient(
+              () => ApiRequestHelper().post(
+                uri: uri,
+                data: const {'page': 1},
+                userToken: 'real-token',
+                abortTrigger: abort.future,
+              ),
+              () => client,
+            );
+
+            expect(result, {'ok': true});
+            final request = client.request;
+            expect(
+              request,
+              isA<http.Abortable>().having(
+                (request) => request.abortTrigger,
+                'abortTrigger',
+                same(abort.future),
+              ),
+            );
+            expect(
+              request,
+              isA<http.Request>()
+                  .having((request) => request.method, 'method', 'POST')
+                  .having((request) => request.url, 'url', uri)
+                  .having((request) => jsonDecode(request.body), 'body', {
+                    'page': 1,
+                  })
+                  .having(
+                    (request) => request.headers['Authorization'],
+                    'Authorization',
+                    'real-token',
+                  )
+                  .having(
+                    (request) => request.headers['Content-Type'],
+                    'Content-Type',
+                    startsWith('application/json'),
+                  ),
+            );
+            expect(client.closed, isTrue);
+          },
+        );
+
+        test('sends a form upload with the trigger too', () async {
+          final client = _RecordingClient();
+
+          await http.runWithClient(
+            () => ApiRequestHelper().post(
+              uri: uri,
+              data: const {'page': 1},
+              contentType: ContentType.formData,
+              abortTrigger: abort.future,
+            ),
+            () => client,
+          );
+
+          expect(
+            client.request,
+            isA<http.MultipartRequest>().having(
+              (request) => (request as http.Abortable).abortTrigger,
+              'abortTrigger',
+              same(abort.future),
+            ),
+          );
+        });
       });
     });
 
@@ -176,4 +292,22 @@ void main() {
       });
     });
   });
+}
+
+class _RecordingClient extends http.BaseClient {
+  http.BaseRequest? request;
+  bool closed = false;
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) async {
+    this.request = request;
+    final body = jsonEncode({
+      'status': 200,
+      'result': {'ok': true},
+    });
+    return http.StreamedResponse(Stream.value(utf8.encode(body)), 200);
+  }
+
+  @override
+  void close() => closed = true;
 }

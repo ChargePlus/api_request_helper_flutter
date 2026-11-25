@@ -87,6 +87,7 @@ class RequestFunctions {
   /// - [headers] The HTTP headers to include in the upload.
   /// - [fileData] The file data to be uploaded. If not provided, a
   /// ServiceException will be thrown.
+  /// - [abortTrigger] When given, completing it aborts the upload.
   ///
   /// Returns:
   /// - A Future that completes when the upload is finished.
@@ -99,11 +100,18 @@ class RequestFunctions {
     required String method,
     required Map<String, String> headers,
     Map<String, String>? fileData,
+    Future<void>? abortTrigger,
   }) async {
     final files = fileData?.entries ?? [];
     final body = data.map((key, value) => MapEntry(key, value.toString()));
 
-    final request = http.MultipartRequest(method, uri);
+    final request = abortTrigger == null
+        ? http.MultipartRequest(method, uri)
+        : http.AbortableMultipartRequest(
+            method,
+            uri,
+            abortTrigger: abortTrigger,
+          );
     request.headers.addAll(headers);
     request.fields.addAll(body);
 
