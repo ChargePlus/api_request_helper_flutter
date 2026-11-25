@@ -219,18 +219,25 @@ own_checkout() {
 }
 # <dir>: refuse a checkout whose sandbox or guard differs from this script's
 # checkout. Codex loads <dir>'s .codex profile and hooks, so a branch under
-# review must not get to pick its own sandbox.
+# review must not get to pick its own sandbox. Two files Codex never loads
+# from <dir> are left out: delegate.conf (sourced from this script's
+# checkout) and the Claude SessionStart hook.
 same_sandbox() {
-  local d
+  local d a b none
   [ "$1" = "$src" ] && return 0
   # An older branch with no sandbox at all is a fallback to Claude, not a stop.
   [ -f "$1/.codex/config.toml" ] || unavailable "$1 has no .codex/config.toml secrets sandbox (a branch cut before it landed)"
+  none=$(mktemp -d)
   for d in .codex .claude/hooks; do
-    [ -e "$src/$d" ] || [ -e "$1/$d" ] || continue # this repo may have no hooks
-    diff -rq "$src/$d" "$1/$d" >/dev/null 2>&1 && continue
+    a="$src/$d" b="$1/$d"
+    [ -d "$a" ] || a=$none # this repo may have no hooks
+    [ -d "$b" ] || b=$none
+    diff -rq -x delegate.conf -x pstack_session_context.py "$a" "$b" >/dev/null 2>&1 && continue
+    rmdir "$none"
     echo "SECURITY STOP: $1/$d differs from $src/$d; Codex would run with that checkout's sandbox. Inspect it before reviewing there." >&2
     exit 2
   done
+  rmdir "$none"
 }
 # Parse [--base <ref>] [--in <dir>] flags; a typo must fail, not fall back.
 opt_base="" opt_in=""
