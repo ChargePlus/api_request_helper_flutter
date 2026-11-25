@@ -2,6 +2,7 @@
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import tempfile
 import time
@@ -90,6 +91,8 @@ class ReviewGatesTest(unittest.TestCase):
             "Perf device tiers ⏳ pending (no device)",
             "Perf (tier B, run 10:30): pending",
             "- pending on Pixel 3",
+            "perf (pending)",
+            "critic pending: agent still running",
         ):
             with self.subTest(status=status):
                 body = BODY.replace("no findings.", status)
@@ -121,6 +124,21 @@ class ReviewGatesTest(unittest.TestCase):
     def test_autolink_is_not_a_placeholder(self):
         body = BODY.replace("[comment](https://example.com/comment)", "<https://example.com/comment>")
         self.assertEqual(self.result(body), [])
+
+    def test_placeholder_with_a_colon_is_not_an_autolink(self):
+        for text in ("<todo: what no run could prove>", "<partial: why>"):
+            with self.subTest(text=text):
+                self.assertEqual(self.result(BODY.replace("no findings.", text)), ["Fill in the Gates run line."])
+
+    def test_wrapped_or_linked_coverage(self):
+        for verdict in (
+            f"PASS+NOTES · [comment](https://example.com/comment) ·\n  covers {HEAD}",
+            f"PASS · [comment](https://example.com/comment) · covers [{HEAD}](https://example.com/commit/{HEAD})",
+            f"PASS (supersedes the FAIL on {BASE}), covers {HEAD}",
+        ):
+            with self.subTest(verdict=verdict):
+                body = re.sub(r"(?<=\*\*Independent verdict:\*\* )[^\n]*", verdict.replace("\\", "\\\\"), BODY)
+                self.assertEqual(self.result(body), [])
 
     def test_fenced_field_does_not_count(self):
         body = BODY.replace("- **Verification-blocked:** none", "```\n- **Verification-blocked:** none\n```")

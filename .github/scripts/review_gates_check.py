@@ -17,8 +17,8 @@ PROSE_PREFIXES = ("docs/briefs/", "docs/notes/")
 CONFIG = Path(".github/review-gates.json")
 SHA = re.compile(r"[0-9a-fA-F]{40}")
 VERDICT_SHA = re.compile(r"(?<!\w)[0-9a-fA-F]{40}(?!\w)")
-# `<…>` template text; an autolink such as <https://…> is not one.
-PLACEHOLDER = re.compile(r"<(?![a-zA-Z][\w+.-]*:)[^<>\n]+>")
+# `<…>` template text; an autolink such as <https://…> (a scheme, no spaces) is not one.
+PLACEHOLDER = re.compile(r"<(?![a-zA-Z][\w+.-]*:[^\s<>]*>)[^<>\n]+>")
 PASS = re.compile(r"^`?(?:PASS\+NOTES|PASS)`?(?=\s|·|$)")
 
 
@@ -96,11 +96,12 @@ def problems(body, head, files, config=None):
             continue
         if not PASS.match(value) or re.search(r"\bpending\b", value, re.IGNORECASE):
             errors.append("Independent verdict must be PASS or PASS+NOTES.")
-        coverage = re.search(r"·[ \t]*covers[ \t]+`?", value)
+        verdict = value + continuation
+        coverage = re.search(r"\bcovers\s+[`\[]?", verdict)
         if coverage:
-            sha = VERDICT_SHA.match(value, coverage.end())
+            sha = VERDICT_SHA.match(verdict, coverage.end())
         else:
-            sha = VERDICT_SHA.search(value)
+            sha = VERDICT_SHA.search(verdict)
         if sha is None:
             errors.append("Independent verdict needs a full 40-character head SHA.")
         elif sha[0].lower() != head.lower():
@@ -117,13 +118,21 @@ def problems(body, head, files, config=None):
 
 def pending(text):
     """Whether a gate's status is pending: the first word after a gate's
-    label, or the last word of a gate, in any line or `;`, `·` or `|` part.
-    A word inside a description ("the Leave pending/hide gap") is not."""
+    label, the last word of a gate or of its label, or `(pending)`, in any
+    line or `;`, `·` or `|` part. A word inside a description ("the Leave
+    pending/hide gap") is not."""
     for part in re.split(r"[\n;·|]", text):
+        if re.search(r"\(\W*pending\W*\)", part, re.IGNORECASE):
+            return True
         part = re.sub(r"\([^()\n]*\)", " ", part)
+        *labels, _ = part.split(":")
         words = re.findall(r"\w[\w/-]*", part.partition(":")[2] or part)
         if words and "pending" in (words[0].lower(), words[-1].lower()):
             return True
+        for label in labels:
+            label_words = re.findall(r"\w[\w/-]*", label)
+            if label_words and label_words[-1].lower() == "pending":
+                return True
     return False
 
 
@@ -144,7 +153,7 @@ def main():
         if not SHA.fullmatch(base) or not SHA.fullmatch(head):
             raise ValueError("expected full base and head SHAs")
         errors = problems(pr["body"], head, changed_files(base, head), config)
-    except (KeyError, OSError, TypeError, ValueError, subprocess.CalledProcessError) as error:
+    except (AttributeError, KeyError, OSError, TypeError, ValueError, subprocess.CalledProcessError) as error:
         print(f"Review gates setup error: {error}", file=sys.stderr)
         return 2
     for error in errors:
