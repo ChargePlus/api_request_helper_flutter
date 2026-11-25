@@ -193,9 +193,6 @@ class ApiRequestHelper {
     }
   }
 
-  /// Sends what top-level [http.post] would, as an [http.AbortableRequest],
-  /// through a client from [http.Client] so `http.runWithClient` still
-  /// applies.
   Future<http.Response> _postAbortable(
     Uri uri, {
     required Map<String, String>? headers,

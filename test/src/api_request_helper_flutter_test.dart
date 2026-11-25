@@ -93,16 +93,14 @@ void main() {
         test(
           'closes the connection and fails with the abort error when it fires',
           () async {
-            // A server that accepts the request and never answers, so only
-            // the abort can end the call.
-            final server = await ServerSocket.bind(
+            final silentServer = await ServerSocket.bind(
               InternetAddress.loopbackIPv4,
               0,
             );
-            addTearDown(server.close);
+            addTearDown(silentServer.close);
             final connected = Completer<void>();
             final closed = Completer<void>();
-            server.listen((socket) {
+            silentServer.listen((socket) {
               socket.listen(
                 (_) {
                   if (!connected.isCompleted) connected.complete();
@@ -113,7 +111,7 @@ void main() {
             });
 
             final result = ApiRequestHelper().post(
-              uri: Uri.parse('http://127.0.0.1:${server.port}/list'),
+              uri: Uri.parse('http://127.0.0.1:${silentServer.port}/list'),
               data: const {'page': 1},
               abortTrigger: abort.future,
             );
@@ -296,7 +294,6 @@ void main() {
   });
 }
 
-/// Records the one request it is sent and answers it with a success.
 class _RecordingClient extends http.BaseClient {
   http.BaseRequest? request;
   bool closed = false;
