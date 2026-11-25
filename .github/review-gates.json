@@ -1,0 +1,4 @@
+{
+  "fields": ["Gates run", "Independent verdict", "API change", "Verification-blocked"],
+  "proseOnly": {"files": ["README.md"], "prefixes": []}
+}
