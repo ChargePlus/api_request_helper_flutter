@@ -1,20 +1,26 @@
-"""Check the review evidence recorded in a pull request body.
-
-Shared by the ChargePlus repos. Each repo's `.github/review-gates.json`
-names its own fields and prose-only paths; without it the defaults below
-apply. A PR opened by a bot account (Dependabot and the like) is skipped.
-"""
+"""Check the review evidence recorded in a pull request body."""
 import json
 import os
 from pathlib import Path
 import re
 import subprocess
 import sys
+from typing import NamedTuple
 
 FIELDS = ("Gates run", "Independent verdict", "Driver critics", "Verification-blocked")
 PROSE_FILES = ("HANDOFF.md",)
 PROSE_PREFIXES = ("docs/briefs/", "docs/notes/")
-CONFIG = Path(".github/review-gates.json")
+CONFIG = Path(__file__).resolve().parent.parent / "review-gates.json"
+UNGATED_BOTS = ("dependabot[bot]",)
+
+
+class Config(NamedTuple):
+    fields: tuple
+    prose_files: tuple
+    prose_prefixes: tuple
+
+
+DEFAULTS = Config(FIELDS, PROSE_FILES, PROSE_PREFIXES)
 SHA = re.compile(r"[0-9a-fA-F]{40}")
 VERDICT_SHA = re.compile(r"(?<!\w)[0-9a-fA-F]{40}(?!\w)")
 # `<…>` template text; an autolink such as <https://…> (a scheme, no spaces) is not one.
@@ -31,20 +37,32 @@ def changed_files(base, head):
 
 
 def load_config(path=CONFIG):
-    """Return (fields, prose files, prose prefixes) from the repo's config."""
     if not path.exists():
-        return FIELDS, PROSE_FILES, PROSE_PREFIXES
+        return DEFAULTS
     data = json.loads(path.read_text(encoding="utf-8"))
-    fields = tuple(data.get("fields", FIELDS))
-    if "Gates run" not in fields or "Independent verdict" not in fields:
+    prose = data.get("proseOnly", {}) if isinstance(data, dict) else None
+    if not isinstance(prose, dict):
+        raise ValueError(f"{path} must be an object whose proseOnly is an object")
+    config = Config(
+        string_list(data, "fields", FIELDS),
+        string_list(prose, "files", PROSE_FILES),
+        string_list(prose, "prefixes", PROSE_PREFIXES),
+    )
+    if "Gates run" not in config.fields or "Independent verdict" not in config.fields:
         raise ValueError("review-gates.json fields must include Gates run and Independent verdict")
-    prose = data.get("proseOnly", {})
-    return fields, tuple(prose.get("files", PROSE_FILES)), tuple(prose.get("prefixes", PROSE_PREFIXES))
+    return config
+
+
+def string_list(data, key, default):
+    value = data.get(key, default)
+    if not isinstance(value, (list, tuple)) or not all(isinstance(item, str) and item for item in value):
+        raise ValueError(f"review-gates.json {key} must be a list of non-empty strings")
+    return tuple(value)
 
 
 def problems(body, head, files, config=None):
     """Return the problems in the Review gates section."""
-    fields_, prose_files, prose_prefixes = config or (FIELDS, PROSE_FILES, PROSE_PREFIXES)
+    config = config or DEFAULTS
     body = (body or "").replace("\r\n", "\n")
     body = re.sub(r"<!--.*?(?:-->|\Z)", "", body, flags=re.DOTALL)
     body = re.sub(
@@ -60,14 +78,14 @@ def problems(body, head, files, config=None):
 
     if section.strip() in ("None: prose-only", "- None: prose-only"):
         if files and all(
-            path in prose_files or path.startswith(prose_prefixes)
+            path in config.prose_files or path.startswith(config.prose_prefixes)
             for path in files
         ):
             return []
-        allowed = ", ".join((*prose_prefixes, *prose_files))
+        allowed = ", ".join((*config.prose_prefixes, *config.prose_files))
         return [f"None: prose-only requires changes confined to {allowed}."]
 
-    labels = "|".join(re.escape(name) for name in fields_)
+    labels = "|".join(re.escape(name) for name in config.fields)
     fields = re.finditer(
         rf"^ {{0,3}}(?:[-*+] +)?\*\*({labels}):\*\*([^\n]*)", section, re.MULTILINE,
     )
@@ -79,7 +97,7 @@ def problems(body, head, files, config=None):
         rest = rest.replace(field[0] + continuation, "", 1)
 
     errors = []
-    for name in fields_:
+    for name in config.fields:
         rows = values.get(name, [])
         if not rows:
             errors.append(f"Missing {name} line.")
@@ -145,8 +163,9 @@ def main():
     try:
         event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text(encoding="utf-8"))
         pr = event["pull_request"]
-        if (pr.get("user") or {}).get("type") == "Bot":
-            print(f"Review gates skipped: opened by the bot {pr['user'].get('login')}.")
+        author = (pr.get("user") or {}).get("login")
+        if author in UNGATED_BOTS:
+            print(f"Review gates skipped: opened by {author}.")
             return 0
         config = load_config()
         base, head = pr["base"]["sha"], pr["head"]["sha"]

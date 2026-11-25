@@ -201,7 +201,7 @@ class ReviewGatesTest(unittest.TestCase):
             with mock.patch.dict(os.environ, {"GITHUB_EVENT_PATH": str(payload)}), mock.patch.object(
                 check, "changed_files", return_value=["lib/app.dart"],
             ), mock.patch.object(
-                check, "load_config", return_value=(check.FIELDS, check.PROSE_FILES, check.PROSE_PREFIXES),
+                check, "load_config", return_value=check.DEFAULTS,
             ), mock.patch("builtins.print") as report:
                 for body, expected in ((BODY, 0), ("", 1)):
                     pr["body"] = body
@@ -214,7 +214,7 @@ class ReviewGatesTest(unittest.TestCase):
                 self.assertIn("setup error", report.call_args.args[0])
 
     def test_custom_fields_and_prose_paths(self):
-        config = (("Gates run", "Independent verdict", "Verification-blocked"), ("README.md",), ("docs/",))
+        config = check.Config(("Gates run", "Independent verdict", "Verification-blocked"), ("README.md",), ("docs/",))
         body = BODY.replace("- **Driver critics:** n/a: nothing user-visible\n", "")
         self.assertEqual(check.problems(body, HEAD, ["lib/app.dart"], config), [])
         self.assertIn("Missing Verification-blocked line.", check.problems(
@@ -225,20 +225,40 @@ class ReviewGatesTest(unittest.TestCase):
     def test_load_config(self):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "review-gates.json"
-            self.assertEqual(check.load_config(path), (check.FIELDS, check.PROSE_FILES, check.PROSE_PREFIXES))
+            self.assertEqual(check.load_config(path), check.DEFAULTS)
             path.write_text(json.dumps({"fields": ["Gates run", "Independent verdict"], "proseOnly": {"prefixes": ["docs/"]}}))
             self.assertEqual(check.load_config(path), (("Gates run", "Independent verdict"), check.PROSE_FILES, ("docs/",)))
-            path.write_text(json.dumps({"fields": ["Gates run"]}))
-            with self.assertRaises(ValueError):
-                check.load_config(path)
+            for bad in (
+                {"fields": ["Gates run"]},
+                {"fields": "Gates run, Independent verdict"},
+                {"proseOnly": {"prefixes": "docs/"}},
+                {"proseOnly": {"prefixes": [""]}},
+                {"proseOnly": {"files": [1]}},
+                {"proseOnly": []},
+                [],
+            ):
+                path.write_text(json.dumps(bad))
+                with self.assertRaises(ValueError, msg=bad):
+                    check.load_config(path)
 
-    def test_bot_pull_requests_are_skipped(self):
+    def test_config_sits_next_to_the_script(self):
+        self.assertEqual(check.CONFIG, Path(check.__file__).resolve().parent.parent / "review-gates.json")
+        if not check.CONFIG.is_file():
+            self.skipTest(f"no {check.CONFIG} in this checkout")
+        committed = json.loads(check.CONFIG.read_text(encoding="utf-8"))
+        self.assertEqual(check.load_config().fields, tuple(committed.get("fields", check.FIELDS)))
+
+    def test_only_dependabot_skips_the_check(self):
         with tempfile.TemporaryDirectory() as folder:
             payload = Path(folder) / "event.json"
-            pr = {"body": "", "head": {"sha": HEAD}, "base": {"sha": BASE}, "user": {"type": "Bot", "login": "dependabot[bot]"}}
-            payload.write_text(json.dumps({"pull_request": pr}))
-            with mock.patch.dict(os.environ, {"GITHUB_EVENT_PATH": str(payload)}), mock.patch("builtins.print"):
-                self.assertEqual(check.main(), 0)
+            pr = {"body": "", "head": {"sha": HEAD}, "base": {"sha": BASE}}
+            with mock.patch.dict(os.environ, {"GITHUB_EVENT_PATH": str(payload)}), mock.patch.object(
+                check, "changed_files", return_value=["lib/app.dart"],
+            ), mock.patch("builtins.print"):
+                for login, expected in (("dependabot[bot]", 0), ("Copilot", 1), ("claude[bot]", 1)):
+                    pr["user"] = {"type": "Bot", "login": login}
+                    payload.write_text(json.dumps({"pull_request": pr}))
+                    self.assertEqual(check.main(), expected, login)
 
 
 if __name__ == "__main__":
