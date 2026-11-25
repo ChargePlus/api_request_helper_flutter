@@ -120,6 +120,10 @@ class ApiRequestHelper {
   ///
   /// [extraHeaders] are sent alongside the default headers. They cannot
   /// override a default header: on a clash the default value wins.
+  ///
+  /// Completing [abortTrigger] aborts the request at whatever stage it has
+  /// reached: the connection closes and the call throws
+  /// [http.RequestAbortedException].
   Future<dynamic> post({
     required Uri uri,
     required Map<String, dynamic> data,
@@ -129,6 +133,7 @@ class ApiRequestHelper {
     ContentType contentType = ContentType.json,
     Duration timeout = const Duration(minutes: 1),
     Map<String, String>? extraHeaders,
+    Future<void>? abortTrigger,
   }) async {
     final isChargeplus = uri.host.contains(chargeplusDomain);
     final packageInfo = await PackageInfo.fromPlatform();
@@ -149,6 +154,7 @@ class ApiRequestHelper {
         method: 'POST',
         headers: headers,
         fileData: fileData,
+        abortTrigger: abortTrigger,
       );
 
       final response = await request.send().timeout(timeout);
@@ -161,15 +167,20 @@ class ApiRequestHelper {
         statusController: _controller,
       );
     } else {
-      final response = await http
-          .post(
-            uri,
-            headers: isChargeplus || kDebugMode || kProfileMode
-                ? headers
-                : null,
-            body: jsonEncode(data),
-          )
-          .timeout(timeout);
+      final sentHeaders = isChargeplus || kDebugMode || kProfileMode
+          ? headers
+          : null;
+      final body = jsonEncode(data);
+      final response =
+          await (abortTrigger == null
+                  ? http.post(uri, headers: sentHeaders, body: body)
+                  : _postAbortable(
+                      uri,
+                      headers: sentHeaders,
+                      body: body,
+                      abortTrigger: abortTrigger,
+                    ))
+              .timeout(timeout);
 
       return RequestFunctions.getResponse(
         responseBody: response.body,
@@ -179,6 +190,30 @@ class ApiRequestHelper {
         data: data,
         statusController: _controller,
       );
+    }
+  }
+
+  /// Sends what top-level [http.post] would, as an [http.AbortableRequest],
+  /// through a client from [http.Client] so `http.runWithClient` still
+  /// applies.
+  Future<http.Response> _postAbortable(
+    Uri uri, {
+    required Map<String, String>? headers,
+    required String body,
+    required Future<void> abortTrigger,
+  }) async {
+    final client = http.Client();
+    try {
+      final request = http.AbortableRequest(
+        'POST',
+        uri,
+        abortTrigger: abortTrigger,
+      );
+      if (headers != null) request.headers.addAll(headers);
+      request.body = body;
+      return await http.Response.fromStream(await client.send(request));
+    } finally {
+      client.close();
     }
   }
 
