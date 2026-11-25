@@ -26,15 +26,18 @@ PREV=$(git describe --tags --abbrev=0 origin/main)
 git log --first-parent --format=%s "$PREV..origin/develop"   # PR merges
 ```
 
-Every PR merged since `$PREV` must carry a `<!-- review-gates -->` block
-with a `PASS` or `PASS+NOTES` verdict (`gh pr view <n> --json body`;
-`.claude/extensions/review/gates.md`). A PR merged before 2026-11-25 may
+Every PR merged since `$PREV` must carry a `## Review gates` section
+(`gh pr view <n> --json body`; `.claude/extensions/review/gates.md`,
+The Review gates block) whose **Independent verdict** line is `PASS` or
+`PASS+NOTES`, or that reads `None: prose-only`. The **Review gates** CI
+check enforces that shape on each PR. A PR merged before 2026-11-25 may
 carry the older `routine:status` block instead. If one carries neither,
 run the review gates on it before releasing — don't release over it.
 
-The bump defaults to the most severe `API change:` line among those PRs:
-Breaking → `major`, Behavior or Additive → `minor`, Internal → `patch`.
-An argument that asks for less stops for Ezra.
+The bump defaults to the most severe **API change** line among those
+PRs: Breaking → `major`, Behavior or Additive → `minor`, Internal or
+`None: prose-only` → `patch`. An argument that asks for less stops for
+Ezra.
 
 ## 2. Release
 

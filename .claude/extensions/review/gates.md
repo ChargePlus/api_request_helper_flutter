@@ -30,7 +30,11 @@ gates keep the judgement.
 | Agent instructions | the diff touches `CLAUDE.md`, `AGENTS.md`, `.claude/` or `.codex/` | a fresh agent reads every rule the diff adds or changes against `CLAUDE.md`, `.claude/extensions/pstack.md`, this file and every file the rule names (the skill, agent, hook or script it edits or points to), and quotes each conflict: two rules that disagree, a rule a later line undoes, a step that names a tool or path that does not exist, or anything that weakens a hard stop. Fix each one before the PR goes to Ezra. |
 | Independent verdict | every PR except prose-only | pstack Shipping step 1, with a scratch consumer standing in for the app: see [Independent verdict](#independent-verdict) |
 
-Prose-only changes (`*.md` outside `.claude/`) run CI and Public repo only.
+Prose-only changes (only the `proseOnly` paths in `.github/review-gates.json`,
+today `README.md`) run CI and Public repo only, and their Review gates
+section is `None: prose-only`. Any other `.md` runs the gates its path
+triggers (`CLAUDE.md`, `AGENTS.md` and `.claude/` the agent instructions
+gate, `.github/` code review).
 
 **Order:** cleanup → code review → interrogate → API compatibility →
 consumer impact → fuzz → security → public-API docs → public repo → agent
@@ -257,6 +261,15 @@ cannot (a behavior that only shows on a real device, the web build, or the
 production host), it posts `PASS+NOTES (partial: <reason>)`, never a plain
 `PASS`.
 
+A diff with nothing for a consumer to call (only `.claude/`, `.codex/`,
+`.github/`, `CLAUDE.md`, `AGENTS.md` or a script) has no scratch
+consumer. The agent runs each changed hook, script, workflow step or
+skill command the way its caller does, on a scratch directory, at the
+merge base and at the head, with one input that should change behavior
+and one that should not (a hook gets its event's JSON on stdin). A
+`pull_request` workflow that cannot run from the branch is
+`PASS+NOTES (partial: <reason>)`. The `control-cli` skill runs this gate.
+
 ### Re-verdicts
 
 A verdict covers one head SHA:
@@ -311,29 +324,40 @@ this list.
 
 ## The Review gates block
 
-Every PR body ends with this block. Read the body first
-(`gh pr view <n> --json body`), replace between the markers if present,
-never clobber the template sections, and write it with
+The PR body's `## Review gates` section, between the
+`<!-- review-gates -->` markers that `.github/PULL_REQUEST_TEMPLATE.md`
+carries. The `review-gates` skill writes it, the **Review gates** CI
+check (`.github/scripts/review_gates_check.py`, its fields in
+`.github/review-gates.json`) fails the PR until it is filled in, and
+`cut-release` reads it. Read the body first
+(`gh pr view <n> --json body`), replace between the markers, never
+clobber the sections above it, and write it with
 `gh pr edit <n> --body-file <file>`.
 
 ```
 <!-- review-gates -->
-### Review gates
+## Review gates
 
-API change: Additive | Behavior | Breaking | Internal → patch | minor | major
-
-| Gate | Result | Evidence |
-| --- | --- | --- |
-| <gate> | ✅ / ⚠️ partial / ❌ blocked / n/a | <commit, test name, link or reason> |
-
-Verdict: PASS | PASS+NOTES | FAIL on <full head SHA>: <comment link>
-<what was skipped and why, one line each>
+- **Gates run:**
+  - **<gate>:** ✅ / ⚠️ partial / ❌ blocked / n/a · <commit, test name, link or reason>
+- **Independent verdict:** PASS / PASS+NOTES / FAIL · <comment link> · covers <full 40-character head SHA>
+- **API change:** Additive / Behavior / Breaking / Internal → patch / minor / major
+- **Verification-blocked:** none, or each check that could not run here and why
 <!-- /review-gates -->
 ```
 
-Mark a gate ⚠️ partial or ❌ blocked with its reason whenever it could not
-do its job. A green result needs evidence. If the PR title no longer
-covers what the branch does, retitle it.
+One **Gates run** sub-line per gate, in the order above, and `n/a` with
+the missing trigger for a gate the diff does not reach. Mark a gate ⚠️
+partial or ❌ blocked with its reason whenever it could not do its job.
+**Verification-blocked** names those gates and every finding recorded as
+verification-blocked, or says `none`. A green result needs evidence. A
+prose-only change writes `None: prose-only` as the whole section.
+
+The check fails on a `<…>` left in, a gate still `pending` (as a gate's
+first or last word: inside a description, put the word in backticks),
+a verdict other than `PASS` or `PASS+NOTES`, or a verdict SHA that is
+not the PR head. A push after the verdict needs a re-verdict.
+If the PR title no longer covers what the branch does, retitle it.
 
 ## Report
 
