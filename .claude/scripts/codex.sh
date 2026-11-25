@@ -2,14 +2,18 @@
 # Hand work to Codex (the builder) from a Claude session (the lead).
 # Optional: whenever Codex can't take the work, the script exits 3 with the
 # reason on stderr, and the Claude session does it itself. See
-# .claude/skills/codex/SKILL.md.
+# .claude/agents/codex.md and .claude/extensions/pstack.md.
 #
 #   codex.sh available                                   exit 0 if Codex can take work here
 #   codex.sh start  <feature|bugfix> <name> <brief.md> [--from <base>]
 #                                                        new git-flow branch + worktree, Codex builds
 #   codex.sh resume <name> <feedback.md>                 same Codex thread, more instructions
 #   codex.sh review <name>                               Codex reviews the branch vs its base
-#   codex.sh ask    <brief.md>                           read-only question on the main checkout
+#   codex.sh ask    <brief.md> [--in <dir>]              read-only question on the main checkout,
+#                                                        or on <dir> (a worktree of this repo)
+#   codex.sh review-diff [--base <ref>] [--in <dir>]     read-only review of <dir>'s branch + uncommitted
+#                                                        work vs <ref> (defaults: the current checkout,
+#                                                        delegate.conf BASE)
 #   codex.sh status <name>                               run state + Codex's last message
 #
 # Exit 3 (every mode, available included): Codex can't take the work here
@@ -34,7 +38,7 @@ WORKTREE='$main_root/.worktrees/$type/$name'
 WRITE_DIRS=()    # extra writable dirs for builds (caches outside the worktree)
 DENY_PATHS=()    # secrets outside the run's workspace, beyond the guard's --key-dirs
 GUARD=""         # .claude/hooks/<guard>: the hooks' guard, and it answers --key-dirs
-GATES="Run the repo's analyze, format and test commands for what you touched."
+GATES="Run the repo's format, analyze and test commands for what you touched."
 # shellcheck source=/dev/null
 [ -f "$src/.codex/delegate.conf" ] && . "$src/.codex/delegate.conf"
 
@@ -115,15 +119,40 @@ guard_args() { # <dir> [read-only]
 }
 
 preamble() {
+  # pstack's worker rules first, from the TARGET checkout's own pin (the
+  # per-user cache the sibling repos' install_pstack_codex.sh fills), never
+  # whatever pin is active.
+  local dir=${wt:-$src} ref worker cache
+  ref=$(python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["extraKnownMarketplaces"]["cursor-plugins"]["source"]["ref"])' \
+    "$dir/.claude/settings.json" 2>/dev/null || true)
+  cache=${XDG_CACHE_HOME:-}
+  case "$cache" in /*) ;; *) cache="$HOME/.cache" ;; esac
+  worker="$cache/chargeplus/pstack/$ref/skills/poteto-mode/worker.md"
+  if [ -n "$ref" ] && ! [[ $ref =~ ^[0-9a-f]{40}$ ]]; then
+    echo "(pstack pin '$ref' in $dir/.claude/settings.json is not a full commit SHA; no pstack kickoff. Follow CLAUDE.md as usual.)"
+    echo
+  elif [ -n "$ref" ] && [ -f "$worker" ]; then
+    cat <<EOF
+Read $worker before anything else. Then read .claude/extensions/pstack.md:
+its add-on gates, and the hard rules, gates and report format below, are
+part of your bar, and its hard stops (approvals, no merge, no destructive
+git, secrets and the public repo, the PR body) override worker.md.
+
+EOF
+  elif [ -n "$ref" ]; then
+    echo "(pstack ${ref:0:12} is pinned here but its skills are not in $cache/chargeplus/pstack for Codex. Follow CLAUDE.md as usual.)"
+    echo
+  fi
   cat <<EOF
 You are the BUILDER. A Claude session is the lead: it wrote this brief, will
-review your diff, and commits/ships. Read AGENTS.md and CLAUDE.md first and
-obey them.
+review your diff, and commits/ships. Read CLAUDE.md first and obey it.
 
 Hard rules:
-- NEVER read, list, search or copy secret files (API keys, .env, config with
-  credentials) that CLAUDE.md or AGENTS.md name. The sandbox and hooks block
-  them; do not try to work around a block — report it.
+- NEVER read, list, search or copy secret files (API keys, .env files,
+  credentials), here or in a sibling checkout. The sandbox blocks what it
+  can; do not try to work around a block — report it.
+- This repo is PUBLIC. Never write a key, token, dart-define value,
+  internal hostname or customer data into code, tests, fixtures or docs.
 - Do not commit, push, merge, rebase, or touch other branches/worktrees.
   Leave all changes uncommitted in this worktree.
 - Gates before finishing: $GATES Fix what you broke.
@@ -180,6 +209,40 @@ report() {
 }
 
 need_file() { [ -f "$1" ] || { echo "no such file: $1" >&2; exit 2; }; }
+# <dir>: absolute path of a checkout of THIS repo (main or a worktree), else exit 2.
+own_checkout() {
+  local dir
+  dir=$(cd "$1" 2>/dev/null && git rev-parse --show-toplevel 2>/dev/null) || { echo "not a git checkout: $1" >&2; exit 2; }
+  [ "$(git -C "$dir" rev-parse --path-format=absolute --git-common-dir)" = "$common" ] ||
+    { echo "$dir is not a checkout of this repo" >&2; exit 2; }
+  echo "$dir"
+}
+# <dir>: refuse a checkout whose sandbox or guard differs from this script's
+# checkout. Codex loads <dir>'s .codex profile and hooks, so a branch under
+# review must not get to pick its own sandbox.
+same_sandbox() {
+  local d
+  [ "$1" = "$src" ] && return 0
+  # An older branch with no sandbox at all is a fallback to Claude, not a stop.
+  [ -f "$1/.codex/config.toml" ] || unavailable "$1 has no .codex/config.toml secrets sandbox (a branch cut before it landed)"
+  for d in .codex .claude/hooks; do
+    [ -e "$src/$d" ] || [ -e "$1/$d" ] || continue # this repo may have no hooks
+    diff -rq "$src/$d" "$1/$d" >/dev/null 2>&1 && continue
+    echo "SECURITY STOP: $1/$d differs from $src/$d; Codex would run with that checkout's sandbox. Inspect it before reviewing there." >&2
+    exit 2
+  done
+}
+# Parse [--base <ref>] [--in <dir>] flags; a typo must fail, not fall back.
+opt_base="" opt_in=""
+parse_opts() {
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --base) [ $# -ge 2 ] || usage; opt_base=$2; shift 2 ;;
+      --in) [ $# -ge 2 ] || usage; opt_in=$2; shift 2 ;;
+      *) usage ;;
+    esac
+  done
+}
 need_run() { [ -f "$runs/$1/branch" ] || { echo "no Codex branch named '$1' (see $runs)" >&2; exit 2; }; }
 field() { sed -n "$2p" "$runs/$1/branch"; } # <name> <line>: 1 branch, 2 worktree, 3 base
 
@@ -263,14 +326,41 @@ $(cat "$feedback")"
   ask)
     [ $# -ge 1 ] || usage
     brief=$1
+    shift
+    parse_opts "$@"
+    [ -z "$opt_base" ] || usage
     need_file "$brief"
+    dir=$main_root
+    [ -z "$opt_in" ] || dir=$(own_checkout "$opt_in")
+    same_sandbox "$dir"
     require_codex
     log="$runs/ask-$(stamp)"
-    guard_args "$main_root" read-only
-    run_codex "$main_root" "$log" -C "$main_root" "${ARGS[@]}" \
-      "Read-only investigation for the lead Claude session: change no files. Never read the secret files CLAUDE.md names. Answer concisely with file:line references.
+    guard_args "$dir" read-only
+    run_codex "$dir" "$log" -C "$dir" "${ARGS[@]}" \
+      "Read-only investigation for the lead Claude session: change no files. Never read secret files (API keys, .env files, credentials). Answer concisely with file:line references.
 
 $(cat "$brief")"
+    ;;
+  review-diff)
+    parse_opts "$@"
+    dir=$(own_checkout "${opt_in:-$PWD}") # default: the checkout you are in
+    base=${opt_base:-$BASE}
+    [ -n "$base" ] || { echo "review-diff needs --base <ref>" >&2; exit 2; }
+    git -C "$dir" rev-parse -q --verify "$base^{commit}" >/dev/null || { echo "unknown base: $base" >&2; exit 2; }
+    same_sandbox "$dir"
+    require_codex
+    log="$runs/review-diff-$(stamp)"
+    guard_args "$dir" read-only
+    # New files must show in the diff, so mark them intent-to-add, but in a
+    # throwaway copy of the index: the caller's staging is never touched,
+    # whatever exits early, and parallel reviewers don't collide.
+    index=$(mktemp)
+    trap 'rm -f "$index"' EXIT
+    cp "$(git -C "$dir" rev-parse --path-format=absolute --git-path index)" "$index"
+    git -C "$dir" ls-files -z --others --exclude-standard |
+      GIT_INDEX_FILE=$index GIT_LITERAL_PATHSPECS=1 git -C "$dir" add --intent-to-add --pathspec-from-file=- --pathspec-file-nul
+    export GIT_INDEX_FILE=$index
+    run_codex "$dir" "$log" review "${ARGS[@]}" --base "$base"
     ;;
   status)
     [ $# -ge 1 ] || usage
