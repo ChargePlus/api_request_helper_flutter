@@ -2,7 +2,7 @@
 """SessionStart hook: tell each new Claude session that pstack is the base
 process here and our gates add on top.
 
-Prints SessionStart additionalContext (about 150 words) with the resolved
+Prints SessionStart additionalContext (about 200 words) with the resolved
 path of the pinned pstack install, because pstack's skills are slash-only:
 the Skill tool can't start them, so an agent runs one by reading its
 SKILL.md. Never fails the session: any problem becomes a one-line note.
@@ -56,7 +56,7 @@ def main():
             f"({ref[:12]}) is not installed for this checkout. Tell the user to trust the folder or run "
             "`claude plugin marketplace update cursor-plugins && claude plugin install pstack@cursor-plugins --scope project`; "
             "until then follow CLAUDE.md as usual, and run the review gates' interrogate panel by hand "
-            "(.claude/extensions/review/gates.md, \"When pstack is not installed\")."
+            "(.claude/extensions/review/gates.md, \"When pstack is not installed\"), and run the review-gates skill before opening a PR."
         )
     else:
         skills = os.path.join(p, "skills")
@@ -65,7 +65,9 @@ def main():
             f"follow poteto-mode in full: read {skills}/poteto-mode/SKILL.md and run its playbook, plus the "
             "add-on gates and hard stops in .claude/extensions/pstack.md (gates, in .claude/extensions/review/gates.md: "
             f"{GATES}, an independent verifier's PASS/FAIL; hard stops: approvals, no merge, no destructive git, "
-            "secrets and the public repo, the PR body). This is a library that every app pulls unpinned, so a "
+            "secrets and the public repo, the PR body). Run the review-gates skill before pstack's Opening a PR playbook: the PR body's ## Review gates section is required and the Review gates CI check reads it. "
+            "/deslop and control-cli are this repo's skills of those names (a control-ui step uses control-cli). "
+            "This is a library that every app pulls unpinned, so a "
             "change here is a change to every consumer. Codex is a subagent (subagent_type \"codex\") wherever a role names it. "
             f"pstack skills are slash-only: run one by reading {skills}/<name>/SKILL.md "
             f"(adapter: {p}/docs/harness/claude-code.md). Every agent brief you write starts with "
