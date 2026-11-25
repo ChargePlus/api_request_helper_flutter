@@ -15,5 +15,5 @@
     }
   ],
   "useGitignore": true,
-  "words": ["chargeplus", "dartdoc", "fire_x", "sandboxed", "oneline", "triaging", "worktrees"]
+  "words": ["chargeplus", "dartdoc", "fire_x", "sandboxed", "oneline", "triaging", "worktrees", "automations", "bugbot", "deslop", "hillclimb", "hostnames", "mgmt", "mktemp", "poteto", "pstack", "toplevel", "unslop", "xapi", "xapitoken"]
 }
